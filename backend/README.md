@@ -36,11 +36,6 @@ Go 会自动读取当前工作目录的 `.env`，请在 `backend` 目录执行 `
 
 任务模块位于 internal/task，沿用相同分层。bootstrap/task_migration.go 在商品迁移之后初始化任务表与看板版本，种子版本为 2。所有任务写入校验 version 并在事务中加锁，单看板最多 200 条。接口说明见 [任务看板接口文档](../docs/02-任务看板接口与TypeScript类型.md)。
 
-```sh
-# 项目根目录，确保服务已启动
-python3 backend/tests/task_smoke.py
-API_URL=http://localhost:5666/api python3 backend/tests/task_smoke.py
-```
 
 ## 分享与首次启动
 

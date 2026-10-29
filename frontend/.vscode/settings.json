@@ -42,9 +42,8 @@
   "oxc.typeAware": false,
   "oxc.configPath": "oxlint.config.ts",
   "oxc.fmt.configPath": "oxfmt.config.ts",
-  "eslint.useFlatConfig": true,
+  "eslint.enable": false,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
     "source.fixAll.oxc": "explicit",
     "source.fixAll.stylelint": "explicit",
     "source.organizeImports": "never"
@@ -186,20 +185,6 @@
   "js/ts.preferences.preferTypeOnlyAutoImports": true,
   "js/ts.preferences.includePackageJsonAutoImports": "on",
 
-  "eslint.validate": [
-    "javascript",
-    "typescript",
-    "javascriptreact",
-    "typescriptreact",
-    "vue",
-    "html",
-    "markdown",
-    "json",
-    "jsonc",
-    "json5",
-    "yaml"
-  ],
-
   "tailwindCSS.experimental.classRegex": [
     ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
   ],
@@ -235,7 +220,7 @@
     "*.env": "$(capture).env.*",
     "README.md": "README*,CHANGELOG*,LICENSE,CNAME",
     "package.json": "pnpm-lock.yaml,pnpm-workspace.yaml,.gitattributes,.gitignore,.gitpod.yml,.npmrc,.browserslistrc,.node-version,.git*,.tazerc.json",
-    "oxlint.config.ts": ".eslintignore,.stylelintignore,stylelint.config.*,.lintstagedrc.mjs,cspell.json,lefthook.yml,oxfmt.config.*,eslint.config.*"
+    "oxlint.config.ts": ".stylelintignore,stylelint.config.*,.lintstagedrc.mjs,cspell.json,lefthook.yml,oxfmt.config.*"
   },
   "commentTranslate.hover.enabled": false,
   "commentTranslate.multiLineMerge": true,

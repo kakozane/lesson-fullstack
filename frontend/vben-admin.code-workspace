@@ -9,10 +9,6 @@
       "path": "apps/starter"
     },
     {
-      "name": "@vben/eslint-config",
-      "path": "internal/lint-configs/eslint-config"
-    },
-    {
       "name": "@vben/oxfmt-config",
       "path": "internal/lint-configs/oxfmt-config"
     },

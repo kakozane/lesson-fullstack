@@ -26,6 +26,11 @@ type Task struct {
 	UpdatedAt string `json:"updatedAt"`
 }
 type Board struct {
-	Items   []Task `json:"items"`
-	Version int64  `json:"version"`
+	Items      []Task `json:"items"`
+	Version    int64  `json:"version"`
+	Total      int    `json:"total"`
+	Doing      int    `json:"doing"`
+	Completed  int    `json:"completed"`
+	Overdue    int    `json:"overdue"`
+	Completion int    `json:"completion"`
 }

@@ -13,6 +13,7 @@ export default defineConfig(async () => {
       ],
       server: {
         host: '127.0.0.1',
+        open: true,
         strictPort: true,
         proxy: {
           '/api': {

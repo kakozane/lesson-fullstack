@@ -17,7 +17,7 @@ export function applyTaskMove(items: Task[], move: TaskMove): Task[] {
 }
 
 export function useTaskBoard() {
-  const board = ref<TaskBoard>({ items: [], version: 0 });
+  const board = ref<TaskBoard>({ items: [], version: 0, total: 0, doing: 0, completed: 0, overdue: 0, completion: 0 });
   const loading = ref(false);
   const pending = ref(false);
   const failed = ref(false);

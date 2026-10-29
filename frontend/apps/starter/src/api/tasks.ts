@@ -17,6 +17,11 @@ export interface Task extends TaskInput {
 export interface TaskBoard {
   items: Task[];
   version: number;
+  total: number;
+  doing: number;
+  completed: number;
+  overdue: number;
+  completion: number;
 }
 export interface TaskMove {
   id: number;

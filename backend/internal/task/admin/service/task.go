@@ -8,6 +8,7 @@ import (
 	"lesson06/backend/internal/task/admin/dto"
 	"lesson06/backend/internal/task/entity"
 	"lesson06/backend/internal/task/repository"
+	"math"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -61,11 +62,29 @@ func result(items []entity.Task, version int64, err error) (*dto.Board, error) {
 	if err != nil {
 		return nil, err
 	}
-	board := &dto.Board{Items: []dto.Task{}, Version: version}
+	return buildBoard(items, version, time.Now()), nil
+}
+
+// 统计与列表使用同一份仓储快照；日期统一按北京时间判断。
+func buildBoard(items []entity.Task, version int64, now time.Time) *dto.Board {
+	board := &dto.Board{Items: []dto.Task{}, Version: version, Total: len(items)}
+	today := now.In(time.FixedZone("Asia/Shanghai", 8*60*60)).Format("2006-01-02")
 	for _, t := range items {
+		if t.Status == "doing" {
+			board.Doing++
+		}
+		if t.Status == "done" {
+			board.Completed++
+		}
+		if t.Status != "done" && t.DueDate != "" && t.DueDate < today {
+			board.Overdue++
+		}
 		board.Items = append(board.Items, dto.Task{ID: t.ID, TaskInput: dto.TaskInput{Title: t.Title, Description: t.Description, Assignee: t.Assignee, Priority: t.Priority, Status: t.Status, DueDate: t.DueDate}, UpdatedAt: t.UpdatedAt.Format("2006-01-02 15:04:05")})
 	}
-	return board, nil
+	if board.Total > 0 {
+		board.Completion = int(math.Round(float64(board.Completed) * 100 / float64(board.Total)))
+	}
+	return board
 }
 func (s *TaskService) List(ctx context.Context) (*dto.Board, error) { return result(s.repo.List(ctx)) }
 func (s *TaskService) Save(ctx context.Context, id int64, p dto.SaveRequest) (*dto.Board, error) {

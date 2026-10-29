@@ -21,7 +21,7 @@
 
 前端提供独立初始应用 `frontend/apps/starter`，保留登录、布局和两个菜单，业务页只有标题；`frontend/apps/admin` 保留完整参考实现。
 
-在 frontend 目录执行 `corepack pnpm dev:starter`，访问 http://localhost:5667；完整版仍用 `corepack pnpm dev:admin`，地址 http://localhost:5666。两者可同时运行，共用 Go 与数据库。具体实现步骤见对应的实战讲义。
+在 frontend 目录执行 `corepack pnpm dev:starter`，访问 http://localhost:6112；完整版仍用 `corepack pnpm dev:admin`，地址 http://localhost:6111。两者可同时运行，共用 Go 与数据库。具体实现步骤见对应的实战讲义。
 
 ## 启动
 
@@ -50,11 +50,28 @@ corepack pnpm install --frozen-lockfile
 corepack pnpm dev
 ```
 
-访问 http://localhost:5666 ，账号 `admin`，课堂默认密码 `123456`（由 backend/.env 的 ADMIN_PASSWORD 配置）。API：http://127.0.0.1:8080/api/health 。
+访问 http://localhost:6111 ，账号 `admin`，课堂默认密码 `123456`（由 backend/.env 的 ADMIN_PASSWORD 配置）。API：http://127.0.0.1:8080/api/health 。
 
 必须在 frontend 目录运行 pnpm，让 Corepack 读取固定版本；如果从上级目录用全局不同版本的 pnpm 启动，会遇到包管理器版本检查失败。
 
 启动后自动创建独立数据库 `lesson06_shop`、商品表、迁移记录和 36 条演示商品。只在首次初始化时插入演示数据，重启不会覆盖修改或补回删除的数据。不读取或修改其他业务库。新版增加独立任务表和看板版本表，迁移版本 2 首次插入 9 条任务，不重置现有商品。
+
+## 前端代码检查与格式化
+
+在 `frontend` 目录执行：
+
+```sh
+corepack pnpm lint          # Oxlint 检查 JS、TS 和 Vue 脚本
+corepack pnpm lint:fix      # 自动修复可修复的问题
+corepack pnpm format        # Oxfmt 格式化
+corepack pnpm format:check  # 只检查格式，不修改文件
+corepack pnpm check:type    # Vue 模板与 TypeScript 类型检查
+corepack pnpm lint:style    # 独立的样式检查
+```
+
+两个应用和共享包共用 `oxlint.config.ts`、`oxfmt.config.ts`，具体规则位于 `internal/lint-configs`。已移除 ESLint 执行入口及配置包，Oxlint 使用原生规则；规则中的 `eslint/` 名称是 Oxlint 的兼容命名，并不调用 ESLint。
+
+使用 VS Code 时，打开 `frontend` 目录，安装推荐的 Oxc 扩展即可在保存时格式化，工作区已禁用 ESLint。Oxlint 检查不能替代 `vue-tsc` 的模板与类型检查。Lefthook 也已改用 Oxfmt 和 Oxlint；它仅在 Git 仓库已安装对应钩子时运行。
 
 ## 功能
 
@@ -110,8 +127,6 @@ backend/
   .env.example               可公开的配置示例
   .env                       本地配置，禁止提交
   run.sh                     可选启动脚本，等同于在 backend 执行 go run .
-  tests/smoke.py             商品真实 API 回归
-  tests/task_smoke.py        任务真实 API 与并发版本回归
 docs/                        两条独立实战路线与配套参考资料
 
 ```
@@ -133,15 +148,7 @@ teacher、web、playground 和 backend-mock 已移除。保留 monorepo 是因�
  corepack pnpm exec vitest run apps/admin/src/composables/use-product-list.test.ts apps/admin/src/composables/use-task-board.test.ts apps/admin/src/views/tasks/task-meta.test.ts
  corepack pnpm build
 
-# 项目根目录，确保后端正在运行
- python3 backend/tests/smoke.py
- # 再经前端开发代理验证完整链路
- API_URL=http://localhost:5666/api python3 backend/tests/smoke.py
- python3 backend/tests/task_smoke.py
- API_URL=http://localhost:5666/api python3 backend/tests/task_smoke.py
 ```
-
-若修改了课堂登录密码，运行 smoke 时先通过环境变量 ADMIN_PASSWORD 提供相同值。
 
 完整版产物位于 `frontend/apps/admin/dist`，初始版产物位于 `frontend/apps/starter/dist`。开发时 Vite 将 `/api` 代理到 Go；部署静态产物时需要同源反向代理 `/api`，并把页面路由回退到 index.html。`vite preview` 仅预览静态资源，不能当作完整生产部署。
 

@@ -1,6 +1,6 @@
 # mise：全栈开发者的多语言版本管理
 
-前端需要 Node.js，后端需要 Go，脚本可能用 Python，另一个服务又依赖 Java。项目越多，越容易遇到“装过这个工具，但当前版本不对”的问题。
+前端需要 Node.js，后端需要 Go，另一个服务又依赖 Java。项目越多，越容易遇到“装过这个工具，但当前版本不对”的问题。
 
 mise 可以安装并选择不同版本的开发工具，把项目所需版本写进配置文件。配合 Shell 激活，进入不同项目目录时就能选择对应工具；它还可以管理环境变量和常用任务。[mise 官方介绍](https://mise.jdx.dev/)
 
@@ -14,7 +14,7 @@ mise 可以安装并选择不同版本的开发工具，把项目所需版本写
 |---|---|---|
 | 项目 A：维护已有后台 | Node.js 22 | Go 1.25 |
 | 项目 B：Vue + Go 实战 | Node.js 24 | Go 1.26 |
-| 项目 C：数据处理服务 | Python 3.13 | Java 21 |
+| 项目 C：Java 服务 | Node.js 24 | Java 21 |
 
 这些版本是练习场景，不表示所有项目都应该升级到它们。实际选择应依据依赖和构建要求。
 
@@ -206,28 +206,9 @@ mise -C ../app-b exec -- node --version
 
 `-C` 指定工作目录，`exec` 按该目录的配置运行命令，不依赖提示符何时更新。[activate 命令](https://mise.jdx.dev/cli/activate.html)、[exec 命令](https://mise.jdx.dev/cli/exec)
 
-## 6. 多语言项目：同样的方法管理 Python 和 Java
+## 6. 扩展到其他语言：以 Java 为例
 
 以下命令用于各自的独立练习目录，按需要选择，不必为 Vue + Go 项目安装所有语言。
-
-### Python
-
-```sh
-mise use --path ./mise.toml --pin python@3.13
-mise exec -- python --version
-```
-
-选择 Python 解释器后，项目依赖还需要隔离。例如，在 macOS / Linux 的 Bash 或 Zsh 中：
-
-```sh
-mise exec -- python -m venv .venv
-source .venv/bin/activate
-python -m pip --version
-# 完成该虚拟环境中的工作后退出
-deactivate
-```
-
-`.venv/` 应加入 `.gitignore`。mise 选择 Python 版本，虚拟环境隔离这个项目的第三方包；如果使用 uv，也应明确由哪套配置选择解释器，避免多套规则互相覆盖。[Python 支持与虚拟环境](https://mise.jdx.dev/lang/python.html)
 
 ### Java
 
@@ -429,7 +410,7 @@ mise doctor
 
 如果 `mise exec` 正确、普通 `node` 错误，优先检查 Shell 激活、别名与 PATH 顺序。nvm、其他版本管理器或系统安装的 Node.js 可能提供了更靠前的入口。先确认由哪套工具负责选择版本，再调整初始化配置。
 
-已存在 `.tool-versions` 的项目可以使用其配置；`.nvmrc`、`.python-version` 等语言专属文件需要开启相应识别设置。不要默认所有旧版本文件都会自动生效。[开发工具与版本文件](https://mise.jdx.dev/dev-tools/)
+已存在 `.tool-versions` 的项目可以使用其配置；`.nvmrc` 等语言专属文件需要开启相应识别设置。不要默认所有旧版本文件都会自动生效。[开发工具与版本文件](https://mise.jdx.dev/dev-tools/)
 
 ### 10.2 终端正确，IDE 运行或调试版本不对
 

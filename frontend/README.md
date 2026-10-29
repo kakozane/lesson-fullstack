@@ -4,8 +4,8 @@ Vue3 + TypeScript + Vben + Element Plus 多包项目，包含两个独立应用�
 
 | 应用 | 用途 | 启动 | 地址 |
 |---|---|---|---|
-| apps/admin | 完整参考版本 | corepack pnpm dev:admin | http://localhost:5666 |
-| apps/starter | 课堂初始版本，业务页仅标题 | corepack pnpm dev:starter | http://localhost:5667 |
+| apps/admin | 完整参考版本 | corepack pnpm dev:admin | http://localhost:6111 |
+| apps/starter | 课堂初始版本，业务页仅标题 | corepack pnpm dev:starter | http://localhost:6112 |
 
 ```sh
 # 在本目录安装依赖
@@ -19,6 +19,8 @@ corepack pnpm build:starter
 corepack pnpm -F @vben/admin run typecheck
 corepack pnpm build
 ```
+
+启动开发服务后会自动打开浏览器。admin 固定使用 6111 端口，starter 固定使用 6112 端口；端口被占用时会报错，不自动切换。
 
 `corepack pnpm dev` 默认启动完整版。Go API 需要同时运行，两个应用都将 `/api` 代理到 http://127.0.0.1:8080，未启用 Mock。两应用共用同一数据库，分别使用独立的应用缓存命名空间。
 

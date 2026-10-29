@@ -20,7 +20,6 @@ import {
   ElMessage,
   ElMessageBox,
   ElOption,
-  ElProgress,
   ElSelect,
   ElSwitch,
 } from 'element-plus';
@@ -55,20 +54,9 @@ const visibleTasks = computed(() =>
     );
   }),
 );
-const completed = computed(
-  () => board.value.items.filter((task) => task.status === 'done').length,
-);
-const doing = computed(
-  () => board.value.items.filter((task) => task.status === 'doing').length,
-);
-const overdue = computed(
-  () => board.value.items.filter((task) => isOverdue(task)).length,
-);
-const completion = computed(() =>
-  board.value.items.length
-    ? Math.round((completed.value * 100) / board.value.items.length)
-    : 0,
-);
+const completed = computed(() => board.value.completed);
+const doing = computed(() => board.value.doing);
+const overdue = computed(() => board.value.overdue);
 const open = ref(false);
 const editing = ref<Task>();
 const initialStatus = ref<TaskStatus>('todo');
@@ -151,7 +139,7 @@ onBeforeRouteLeave((to) => {
       <ElCard shadow="never"
         ><div class="text-muted-foreground text-xs">全部任务</div>
         <div class="mt-2 text-3xl font-semibold">
-          {{ board.items.length
+          {{ board.total
           }}<span class="text-muted-foreground ml-2 text-xs font-normal"
             >项</span
           >
@@ -179,11 +167,14 @@ onBeforeRouteLeave((to) => {
         </div></ElCard
       >
       <ElCard shadow="never"
-        ><div class="text-muted-foreground mb-3 text-xs">
-          已完成 {{ completed }} / {{ board.items.length }}
-        </div>
-        <ElProgress :percentage="completion" :stroke-width="8"
-      /></ElCard>
+        ><div class="text-muted-foreground text-xs">已完成</div>
+        <div class="mt-2 text-3xl font-semibold">
+          {{ completed
+          }}<span class="text-muted-foreground ml-2 text-xs font-normal"
+            >项</span
+          >
+        </div></ElCard
+      >
     </div>
     <ElCard shadow="never" class="mb-5"
       ><ElForm

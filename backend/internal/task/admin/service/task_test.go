@@ -2,8 +2,10 @@ package service
 
 import (
 	"lesson06/backend/internal/task/admin/dto"
+	"lesson06/backend/internal/task/entity"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestValidateTask(t *testing.T) {
@@ -45,5 +47,34 @@ func TestValidateTask(t *testing.T) {
 		if err := validate(&good); err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestBoardStatistics(t *testing.T) {
+	// UTC 16:00 对应北京时间次日零点；今天到期不算逾期，已完成不算逾期。
+	now := time.Date(2026, 10, 28, 16, 0, 0, 0, time.UTC)
+	items := []entity.Task{
+		{Status: "todo", DueDate: "2026-10-28"},
+		{Status: "doing", DueDate: "2026-10-28"},
+		{Status: "doing", DueDate: "2026-10-29"},
+		{Status: "todo", DueDate: ""},
+		{Status: "done", DueDate: "2026-10-27"},
+		{Status: "todo", DueDate: "2026-10-30"},
+	}
+	b := buildBoard(items, 29, now)
+	if b.Total != 6 || b.Doing != 2 || b.Completed != 1 || b.Overdue != 2 || b.Completion != 17 || b.Version != 29 || len(b.Items) != 6 {
+		t.Fatalf("unexpected board: %+v", b)
+	}
+	before := buildBoard(items, 29, now.Add(-time.Second))
+	if before.Overdue != 0 {
+		t.Fatalf("before midnight overdue=%d", before.Overdue)
+	}
+	empty := buildBoard(nil, 30, now)
+	if empty.Total != 0 || empty.Completion != 0 || empty.Overdue != 0 || empty.Items == nil {
+		t.Fatalf("unexpected empty board: %+v", empty)
+	}
+	done := buildBoard([]entity.Task{{Status: "done"}}, 31, now)
+	if done.Completion != 100 || done.Completed != 1 {
+		t.Fatalf("unexpected completed board: %+v", done)
 	}
 }

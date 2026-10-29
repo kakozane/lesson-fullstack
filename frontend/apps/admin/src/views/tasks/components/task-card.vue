@@ -11,24 +11,18 @@ const props = defineProps<{
   dragDisabled: boolean;
 }>();
 defineEmits<{ edit: [Task]; remove: [Task]; copy: [Task] }>();
-const priority = computed(
-  () => priorities.find((item) => item.value === props.task.priority)!,
-);
+const priority = computed(() => priorities.find((item) => item.value === props.task.priority)!);
 </script>
 
 <template>
   <article class="task-card" :data-id="task.id" :data-priority="task.priority">
     <div class="flex items-center justify-between gap-2">
-      <ElTag :type="priority.type" size="small" effect="light">{{
-        priority.label
-      }}</ElTag>
+      <ElTag :type="priority.type" size="small" effect="light">{{ priority.label }}</ElTag>
       <div class="flex items-center gap-2">
         <span class="text-muted-foreground text-xs">#{{ task.id }}</span>
         <ElTooltip
           :content="
-            dragDisabled
-              ? '清空筛选后可拖拽，也可在编辑中修改状态'
-              : '拖动调整顺序或移入其他列'
+            dragDisabled ? '清空筛选后可拖拽，也可在编辑中修改状态' : '拖动调整顺序或移入其他列'
           "
         >
           <span
@@ -44,12 +38,7 @@ const priority = computed(
         </ElTooltip>
       </div>
     </div>
-    <button
-      class="task-title"
-      type="button"
-      :disabled="disabled"
-      @click="$emit('edit', task)"
-    >
+    <button class="task-title" type="button" :disabled="disabled" @click="$emit('edit', task)">
       {{ task.title }}
     </button>
     <p class="task-description text-muted-foreground">
@@ -60,33 +49,19 @@ const priority = computed(
         ><span class="task-avatar">{{ task.assignee.slice(0, 1) || '待' }}</span
         >{{ task.assignee || '待分配' }}</span
       >
-      <span
-        :class="isOverdue(task) ? 'text-destructive' : 'text-muted-foreground'"
-        >{{
-          task.dueDate
-            ? formatDate(task.dueDate, 'MM-DD') + ' 截止'
-            : '未设截止日期'
+      <span :class="isOverdue(task) ? 'text-destructive' : 'text-muted-foreground'"
+        >{{ task.dueDate ? formatDate(task.dueDate, 'MM-DD') + ' 截止' : '未设截止日期'
         }}<span v-if="isOverdue(task)"> · 已逾期</span></span
       >
     </div>
     <div class="task-actions">
       <ElTooltip :content="`更新于 ${formatDateTime(task.updatedAt)}`"
-        ><ElButton
-          link
-          type="primary"
-          :disabled="disabled"
-          @click="$emit('edit', task)"
+        ><ElButton link type="primary" :disabled="disabled" @click="$emit('edit', task)"
           >编辑</ElButton
         ></ElTooltip
       >
-      <ElButton link :disabled="disabled" @click="$emit('copy', task)"
-        >复制摘要</ElButton
-      >
-      <ElButton
-        link
-        type="danger"
-        :disabled="disabled"
-        @click="$emit('remove', task)"
+      <ElButton link :disabled="disabled" @click="$emit('copy', task)">复制摘要</ElButton>
+      <ElButton link type="danger" :disabled="disabled" @click="$emit('remove', task)"
         >删除</ElButton
       >
     </div>

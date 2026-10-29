@@ -16,6 +16,7 @@ const javascript: OxlintConfig = {
     window: 'readonly',
   },
   rules: {
+    'eslint/no-underscore-dangle': 'off',
     'accessor-pairs': [
       'error',
       {

@@ -1,32 +1,19 @@
-# Lint & 格式化工具链
+# Lint 与格式化
 
-| 工具      | 配置包                   | 作用                         |
-| --------- | ------------------------ | ---------------------------- |
-| ESLint    | `@vben/eslint-config`    | JS/TS/Vue/JSON/YAML 静态检查 |
-| OxLint    | `@vben/oxlint-config`    | 高性能 lint                  |
-| OxFmt     | `@vben/oxfmt-config`     | 代码格式化（替代 Prettier）  |
-| Stylelint | `@vben/stylelint-config` | CSS/SCSS 样式检查            |
-| Lefthook  | 根目录 `lefthook.yml`    | 提交前自动 lint              |
+- Oxlint：JS、TS 和 Vue 脚本静态检查，配置为根目录 `oxlint.config.ts` 和共享包 `@vben/oxlint-config`。
+- Oxfmt：统一格式化，配置为根目录 `oxfmt.config.ts` 和共享包 `@vben/oxfmt-config`。
+- Stylelint：独立检查 CSS、SCSS 和 Vue 样式。
+- Vue 模板和类型检查仍由 vue-tsc 负责，不等同于 Oxlint 的脚本检查。
 
-## OxFmt 配置
-
-| 选项          | 值    |
-| ------------- | ----- |
-| printWidth    | 80    |
-| semi          | true  |
-| singleQuote   | true  |
-| trailingComma | all   |
-| proseWrap     | never |
-
-## 命令
+在 frontend 目录执行：
 
 ```bash
-pnpm lint      # lint 检查
-pnpm format    # 代码格式化
+pnpm lint
+pnpm lint:fix
+pnpm format
+pnpm format:check
+pnpm lint:style
+pnpm check:type
 ```
 
-## 开发注意
-
-- 提交前 Lefthook 会自动跑 lint，失败需修复后重新提交
-- 格式化统一走 `pnpm format`，不要手动混用其他 formatter
-- Vue template 的 HTML 换行/缩进由 OxFmt 负责；ESLint 已关闭 `html-closing-bracket-newline`、`multiline-html-element-content-newline` 等与 formatter 冲突的规则
+安装 VS Code 的 Oxc 扩展后，保存时使用 Oxfmt 格式化，并应用 Oxlint 修复。工作区禁用 ESLint。共享 Oxlint 配置使用原生规则，不加载 ESLint JavaScript 插件。Lefthook 配置在提交前格式化暂存文件并运行 Oxlint；需要 Git 仓库和已安装的钩子才会执行。

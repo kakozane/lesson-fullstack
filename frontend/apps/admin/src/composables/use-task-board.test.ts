@@ -19,7 +19,7 @@ const items: Task[] = [1, 2, 3].map((id) => ({
   description: '',
   updatedAt: '',
 }));
-const initial: TaskBoard = { items, version: 1 };
+const initial: TaskBoard = { items, version: 1, total: 3, doing: 1, completed: 0, overdue: 0, completion: 0 };
 const scopes: ReturnType<typeof effectScope>[] = [];
 function setup() {
   const scope = effectScope();
@@ -69,7 +69,10 @@ describe('任务看板状态', () => {
       false,
     );
     expect(moveTask).toHaveBeenCalledTimes(1);
+    expect(state.board.value.doing).toBe(1);
     const saved = {
+      ...initial,
+      doing: 2,
       items: applyTaskMove(items, { id: 1, status: 'doing', beforeId: 3 }),
       version: 2,
     };
@@ -99,12 +102,13 @@ describe('任务看板状态', () => {
   it('版本冲突后同步最新看板，避免带旧版本再次覆盖', async () => {
     vi.mocked(getTaskBoard)
       .mockResolvedValueOnce(initial)
-      .mockResolvedValueOnce({ items, version: 8 });
+      .mockResolvedValueOnce({ ...initial, version: 8, overdue: 2 });
     vi.mocked(moveTask).mockRejectedValue({ response: { status: 409 } });
     const state = setup();
     await state.refresh();
     await state.move({ id: 1, status: 'done', beforeId: 0 });
     expect(state.board.value.version).toBe(8);
+    expect(state.board.value.overdue).toBe(2);
     expect(state.ready.value).toBe(true);
   });
   it('旧查询不能覆盖新结果或结束新请求的loading', async () => {
@@ -129,7 +133,7 @@ describe('任务看板状态', () => {
     first(initial);
     await old;
     expect(state.loading.value).toBe(true);
-    second({ items, version: 2 });
+    second({ ...initial, version: 2 });
     await latest;
     expect(state.board.value.version).toBe(2);
   });

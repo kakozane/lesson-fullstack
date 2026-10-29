@@ -2,7 +2,7 @@
 
 任务看板包含全量查询、新增、编辑、删除和拖拽移动五个接口。所有写入都携带看板版本 `version`，成功后返回完整看板快照，前端用它更新任务列表和版本。
 
-本文对照当前 Gin 路由、DTO、业务层、排序事务和 Vben 请求封装。示例是一个从 1 条任务开始的小型看板，用于说明字段、排序和版本变化；不代表线上当前数据。在线站点共用演示数据，写入练习优先在本地进行。
+本文对照当前 Gin 路由、DTO、业务层、排序事务和 Vben 请求封装。示例是一个从 1 条任务开始的小型看板，用于说明字段、排序和版本变化；不代表线上当前数据；示例统计按北京时间 2026-10-29 计算。在线站点共用演示数据，写入练习优先在本地进行。
 
 ## 1. 请求约定与接口总览
 
@@ -26,7 +26,7 @@
 | 删除任务 | DELETE | `/api/tasks/:id` | `removeTask(id, version)` | `TaskDeleteInput` | `TaskBoard` |
 | 移动与排序任务 | PATCH | `/api/tasks/:id/move` | `moveTask(move, version)` | `TaskMoveInput` | `TaskBoard` |
 
-当前是单看板实现，没有看板 ID、独立任务详情、统计、分页或服务端筛选接口。最多 200 条任务，前端拿到全量数据后计算统计、搜索、优先级筛选和逾期状态。
+当前是单看板实现，没有看板 ID、独立任务详情、分页或服务端筛选接口。最多 200 条任务。后端随看板返回全量统计，前端负责本地搜索、优先级筛选与卡片展示。
 
 ### 原始响应与前端收到的值
 
@@ -69,8 +69,15 @@ JSON 写入拒绝未知字段和拼接的多个 JSON 值，请求体上限 64 Ki
 |---|---|---|
 | `items` | `Task[]` | 全部任务，空看板为 `[]`；没有分页 total 字段 |
 | `version` | `number` | 全看板共用的正整数版本，不是某一条任务的版本 |
+| `total` | `number` | 全部任务数 |
+| `doing` | `number` | 状态为 doing 的任务数，即“正在推进” |
+| `completed` | `number` | 状态为 done 的任务数 |
+| `overdue` | `number` | 未完成、有截止日期且早于北京时间今天的任务数；当天到期不算逾期 |
+| `completion` | `number` | 完成率百分比，completed / total × 100 四舍五入取整数；空看板为 0 |
 
 服务器按状态和列内位置组织返回结果；每一列中的顺序由内部 `position`、`id` 决定。前端应固定按 `todo → doing → done` 展示三列，并保留 `items` 在各列中的相对顺序，不要重新按 ID 排序。内部 `position` 不返回给前端，也不接受前端直接修改。
+
+这些字段与 `items`、`version` 同级，查询、新建、编辑、删除和移动成功均返回。统计基于同一份仓储快照计算，不受前端筛选影响，不会单独查询出另一时刻的数据。逾期数按响应生成时的北京时间计算；跨日后需要刷新，不会仅因日期变化递增 version。
 
 ### version 的使用规则
 
@@ -79,6 +86,8 @@ JSON 写入拒绝未知字段和拼接的多个 JSON 值，请求体上限 64 Ki
 3. 服务端在事务内锁定看板版本行，检查请求版本，再执行写入。
 4. 成功后版本加 1，并返回完整看板；前端整体替换本地状态。
 5. 版本过期返回 `409`，本次写入不生效，前端刷新后让用户确认是否重试。
+
+例如两个页面都读取到版本 29：页面 A 保存成功后返回 30；页面 B 仍以 29 提交则得到 409，本次修改不会落库。version 不是任务总数，也不是程序发布版本。
 
 不要预先把本地版本加 1，也不要把版本写死为 1。即使编辑内容不变，或一次合法移动没有改变最终顺序，当前实现仍会递增版本。并发操作、其他浏览器页签和其他访问者都可能改变同一个版本。
 
@@ -106,7 +115,12 @@ JSON 写入拒绝未知字段和拼接的多个 JSON 值，请求体上限 64 Ki
         "updatedAt": "2026-10-29 10:00:00"
       }
     ],
-    "version": 7
+    "version": 7,
+    "total": 1,
+    "doing": 0,
+    "completed": 0,
+    "overdue": 0,
+    "completion": 0
   },
   "message": ""
 }
@@ -169,7 +183,12 @@ JSON 写入拒绝未知字段和拼接的多个 JSON 值，请求体上限 64 Ki
         "updatedAt": "2026-10-29 10:01:00"
       }
     ],
-    "version": 8
+    "version": 8,
+    "total": 2,
+    "doing": 0,
+    "completed": 0,
+    "overdue": 0,
+    "completion": 0
   },
   "message": ""
 }
@@ -234,7 +253,12 @@ JSON 写入拒绝未知字段和拼接的多个 JSON 值，请求体上限 64 Ki
         "updatedAt": "2026-10-29 10:00:00"
       }
     ],
-    "version": 9
+    "version": 9,
+    "total": 2,
+    "doing": 1,
+    "completed": 0,
+    "overdue": 0,
+    "completion": 0
   },
   "message": ""
 }
@@ -294,7 +318,12 @@ JSON 写入拒绝未知字段和拼接的多个 JSON 值，请求体上限 64 Ki
         "updatedAt": "2026-10-29 10:02:00"
       }
     ],
-    "version": 10
+    "version": 10,
+    "total": 2,
+    "doing": 2,
+    "completed": 0,
+    "overdue": 0,
+    "completion": 0
   },
   "message": ""
 }
@@ -347,7 +376,12 @@ JSON 写入拒绝未知字段和拼接的多个 JSON 值，请求体上限 64 Ki
         "updatedAt": "2026-10-29 10:03:00"
       }
     ],
-    "version": 11
+    "version": 11,
+    "total": 1,
+    "doing": 1,
+    "completed": 0,
+    "overdue": 0,
+    "completion": 0
   },
   "message": ""
 }
@@ -385,6 +419,11 @@ export interface Task extends TaskInput {
 export interface TaskBoard {
   items: Task[];
   version: number;
+  total: number;
+  doing: number;
+  completed: number;
+  overdue: number;
+  completion: number;
 }
 
 export interface TaskSaveInput extends TaskInput {
@@ -451,7 +490,7 @@ export const moveTask = (
 - 首次查询成功后保存完整 `TaskBoard`。
 - 一次只允许一个写入，写入期间禁用重复提交。
 - 新增、编辑、删除成功后，直接使用服务端返回的完整快照。
-- 拖拽先保存原快照，立即更新卡片位置；接口成功后以服务端快照为准。
+- 拖拽先保存原快照，立即更新卡片位置；顶部统计暂时保留上次服务端结果，接口成功后与新版本、列表一起替换。
 - 写入失败时恢复本地快照，再重新 GET 同步服务端；重新读取也失败时，禁用写入直到刷新成功。
 
 超时并不一定意味着服务端没有完成写入，所以失败后需要重读。收到 409 时保留编辑草稿，读取最新版本，让用户核对后再次提交，不要只换一个新 version 就自动覆盖他人的修改。

@@ -67,10 +67,15 @@ jobs:
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
           RELEASE_SHA: ${{ github.sha }}
         run: |
+          # 校验提交 SHA 格式
           [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          # 定义一个 Shell 变量 target,表示 SSH 连接服务器时使用的“用户名@地址”
           target="root@$DEPLOY_HOST"
+          # 在服务器创建当前版本的部署目录
           ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$target" "mkdir -p /opt/lesson-fullstack/releases/$RELEASE_SHA"
+          # 上传 Compose 配置和发布脚本
           scp -o BatchMode=yes -o StrictHostKeyChecking=yes deploy/compose.yaml deploy/release.sh "$target:/opt/lesson-fullstack/releases/$RELEASE_SHA/"
+          # 在服务器执行发布脚本
           ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$target" "bash /opt/lesson-fullstack/releases/$RELEASE_SHA/release.sh $RELEASE_SHA"
       - name: Remove deployment key
         if: always()
