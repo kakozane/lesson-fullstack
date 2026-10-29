@@ -2,7 +2,7 @@
 
 基于 Vben Admin + Element Plus 的商品管理与任务看板课堂项目。后端使用 Gin + GORM，参考 aiagent_course 的业务模块分层。Go API 已提供，实战重点是前端业务实现。
 
-现在有两个菜单：**商品管理** `/products`、**任务看板** `/tasks`。选择 [任务看板实战讲义](docs/02-任务看板实战讲义.md)或 [商品管理实战讲义](docs/04-商品管理实战讲义.md)，从初始版开始，按步骤完成代码、原理学习、结果验证与拓展练习。两条路线相互独立。
+现在有两个菜单：**商品管理** `/products`、**任务看板** `/tasks`。选择 [任务看板实战讲义](docs/02-任务看板实战讲义.md)或 [商品管理实战讲义](docs/04-商品管理实战讲义.md)，从初始版开始，按步骤完成代码、原理学习与结果验证。两条路线相互独立。
 
 补充学习：[mise 全栈开发环境管理](docs/06-mise全栈开发环境管理.md)，介绍多语言版本固定、目录切换、Corepack 配合与项目任务，可独立阅读和练习。
 
@@ -19,7 +19,7 @@
 
 ## 初始版与完整版
 
-前端新增独立课堂应用 `frontend/apps/starter`，保留登录、布局和两个菜单，业务页只有标题；`frontend/apps/admin` 保留完整答案。
+前端提供独立初始应用 `frontend/apps/starter`，保留登录、布局和两个菜单，业务页只有标题；`frontend/apps/admin` 保留完整参考实现。
 
 在 frontend 目录执行 `corepack pnpm dev:starter`，访问 http://localhost:5667；完整版仍用 `corepack pnpm dev:admin`，地址 http://localhost:5666。两者可同时运行，共用 Go 与数据库。具体操作见 `docs/01-课堂初始版使用说明.md`。
 
@@ -30,9 +30,10 @@
 后端终端：
 
 ```sh
-cd /Users/ethan/Desktop/full-stack-workspace/lesson-06/backend
+# 在项目根目录打开终端
+cd backend
 # 首次拿到项目时：cp .env.example .env，并填写本地数据库密码。
-# 当前机器的 .env 已配置，无须覆盖。
+# 已有 .env 时保留自己的配置，无须覆盖。
 go run .
 ```
 
@@ -43,7 +44,8 @@ Go 会自动读取当前工作目录的 `.env`，因此请在 `backend` 目录�
 前端终端：
 
 ```sh
-cd /Users/ethan/Desktop/full-stack-workspace/lesson-06/frontend
+# 在项目根目录打开另一个终端
+cd frontend
 corepack pnpm install --frozen-lockfile
 corepack pnpm dev
 ```
@@ -63,7 +65,7 @@ corepack pnpm dev
 - 金额使用整数分保存，页面显示元；删除末页数据后自动返回有效页。
 - Vben 登录、菜单、标签页、主题和 Element Plus 组件风格。
 
-任务看板新增：
+任务看板功能：
 
 - 待处理 / 进行中 / 已完成三列；跨列拖拽、列内排序持久化。
 - 新建编辑抽屉、负责人、优先级、截止日期、逾期与进度统计。
@@ -143,9 +145,9 @@ teacher、web、playground 和 backend-mock 已移除。保留 monorepo 是因�
 
 完整版产物位于 `frontend/apps/admin/dist`，初始版产物位于 `frontend/apps/starter/dist`。开发时 Vite 将 `/api` 代理到 Go；部署静态产物时需要同源反向代理 `/api`，并把页面路由回退到 index.html。`vite preview` 仅预览静态资源，不能当作完整生产部署。
 
-## 课堂范围
+## 项目范围
 
-这是本地授课项目：固定管理员、单进程内存会话（8 小时过期，重启须重新登录）、不做注册和细粒度权限。Go 默认只监听 127.0.0.1。真实生产部署需要补充用户管理、登录限流、持久会话、HTTPS、最小权限数据库账号和并发编辑冲突检测。商品保存策略是最后一次提交生效；任务看板已有全局版本冲突检测，但没有实时推送、多项目与成员权限。
+这是学习与演示项目：固定管理员、单进程内存会话（8 小时过期，重启须重新登录）、不做注册和细粒度权限。Go 默认只监听 127.0.0.1。真实生产部署需要根据实际需求补充用户管理、登录限流、持久会话和并发编辑冲突检测；本项目的线上示例已配置 HTTPS 与独立数据库账号。商品保存策略是最后一次提交生效；任务看板已有全局版本冲突检测，但没有实时推送、多项目与成员权限。
 
 数据库密码只保存在被忽略的 backend/.env 中；分享项目时保留 `.env.example`，排除真实 `.env`、node_modules 和 dist。手动压缩不自动遵循 `.gitignore`。新机器无需导入数据库备份，启动会执行 [数据库初始化与迁移](backend/bootstrap/README.md)。
 

@@ -28,13 +28,13 @@ Go 会自动读取当前工作目录的 `.env`，请在 `backend` 目录执行 `
 - entity 表示表结构，DTO 表示接口契约；两者不互相替代。
 - middleware 负责会话校验和 panic 恢复；response 保留 `{code,data,message}`。
 
-接口路径、字段、课堂账号、.env 配置和数据库保持兼容。商品表由显式迁移管理，不使用 AutoMigrate 改动现有表。初始化迁移保留 database/sql，运行时商品仓储使用 GORM。
+接口统一使用 `/api` 前缀，配置由 `.env` 和环境变量提供。商品表由显式迁移管理，不使用 AutoMigrate 改动现有表。初始化迁移保留 database/sql，运行时商品仓储使用 GORM。
 
 课堂侧重点是前端，后端分层可按上述调用链对照源码阅读。
 
 ## 任务看板
 
-新增任务模块位于 internal/task，沿用相同分层。bootstrap/task_migration.go 在商品迁移之后初始化任务表与看板版本，种子版本为 2。所有任务写入校验 version 并在事务中加锁，单看板最多 200 条。接口说明见 [任务看板接口文档](../docs/03-任务看板接口与TypeScript类型.md)。
+任务模块位于 internal/task，沿用相同分层。bootstrap/task_migration.go 在商品迁移之后初始化任务表与看板版本，种子版本为 2。所有任务写入校验 version 并在事务中加锁，单看板最多 200 条。接口说明见 [任务看板接口文档](../docs/03-任务看板接口与TypeScript类型.md)。
 
 ```sh
 # 项目根目录，确保服务已启动
