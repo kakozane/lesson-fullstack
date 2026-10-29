@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormInstance, FormRules } from 'element-plus';
-import type { Product, ProductInput } from '#/api/products';
+import type { Category, Product, ProductInput } from '#/api/products';
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import {
@@ -21,7 +21,7 @@ import { createProduct, updateProduct } from '#/api/products';
 const props = defineProps<{
   modelValue: boolean;
   product?: Product;
-  categories: string[];
+  categories: Category[];
 }>();
 const emit = defineEmits<{ 'update:modelValue': [boolean]; saved: [] }>();
 const formRef = ref<FormInstance>();
@@ -29,7 +29,7 @@ const saving = ref(false);
 const form = reactive({
   name: '',
   sku: '',
-  category: '',
+  categoryId: undefined as number | undefined,
   price: 0.01,
   stock: 0,
   status: 0 as 0 | 1,
@@ -57,7 +57,7 @@ const rules: FormRules = {
       trigger: 'blur',
     },
   ],
-  category: [{ required: true, message: '请选择分类', trigger: 'change' }],
+  categoryId: [{ type: 'number', min: 1, required: true, message: '请选择分类', trigger: 'change' }],
   price: [
     {
       required: true,
@@ -90,7 +90,7 @@ watch(
         ? {
             name: p.name,
             sku: p.sku,
-            category: p.category,
+            categoryId: p.categoryId,
             price: p.priceCents / 100,
             stock: p.stock,
             status: p.status,
@@ -99,7 +99,7 @@ watch(
         : {
             name: '',
             sku: '',
-            category: '',
+            categoryId: undefined,
             price: 0.01,
             stock: 0,
             status: 0,
@@ -148,7 +148,7 @@ async function submit() {
     const data: ProductInput = {
       name: form.name.trim(),
       sku: form.sku.trim(),
-      category: form.category,
+      categoryId: form.categoryId ?? 0,
       priceCents: Math.round(form.price * 100),
       stock: form.stock,
       status: form.status,
@@ -200,16 +200,16 @@ async function submit() {
           maxlength="32"
           placeholder="例如：SP-0037，编码不可重复"
       /></ElFormItem>
-      <ElFormItem label="商品分类" prop="category"
+      <ElFormItem label="商品分类" prop="categoryId"
         ><ElSelect
-          v-model="form.category"
+          v-model="form.categoryId"
           placeholder="请选择分类"
           class="w-full"
           ><ElOption
             v-for="item in categories"
-            :key="item"
-            :label="item"
-            :value="item" /></ElSelect
+            :key="item.id"
+            :label="item.name"
+            :value="item.id" /></ElSelect
       ></ElFormItem>
       <ElFormItem label="销售价格" prop="price"
         ><ElInputNumber

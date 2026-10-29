@@ -1,9 +1,14 @@
 import { requestClient } from '#/api/request';
 
+export interface Category {
+ id: number;
+ name: string;
+}
+
 export interface ProductInput {
   name: string;
   sku: string;
-  category: string;
+  categoryId: number;
   priceCents: number;
   stock: number;
   status: 0 | 1;
@@ -11,11 +16,12 @@ export interface ProductInput {
 }
 export interface Product extends ProductInput {
   id: number;
+  categoryName: string;
   updatedAt: string;
 }
 export interface ProductQuery {
   keyword: string;
-  category: string;
+  categoryId?: number;
   status: '' | 0 | 1;
   page: number;
   pageSize: number;
@@ -28,7 +34,7 @@ export interface ProductPage {
 }
 export const getProducts = (params: ProductQuery) =>
   requestClient.get<ProductPage>('/products', { params });
-export const getCategories = () => requestClient.get<string[]>('/categories');
+export const getCategories = () => requestClient.get<Category[]>('/categories');
 export const createProduct = (data: ProductInput) =>
   requestClient.post('/products', data);
 export const updateProduct = (id: number, data: ProductInput) =>

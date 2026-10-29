@@ -7,7 +7,8 @@ type Product struct {
 	ID          int64 `gorm:"primaryKey;autoIncrement"`
 	Name        string
 	SKU         string `gorm:"column:sku"`
-	Category    string
+	CategoryID  int64
+	Category    Category `gorm:"foreignKey:CategoryID"`
 	PriceCents  int64
 	Stock       int
 	Status      int
@@ -16,3 +17,11 @@ type Product struct {
 }
 
 func (Product) TableName() string { return "products" }
+
+// Category 是商品分类字典，商品通过 ID 关联。
+type Category struct {
+	ID   int64  `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name string `json:"name"`
+}
+
+func (Category) TableName() string { return "categories" }

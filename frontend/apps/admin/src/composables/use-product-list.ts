@@ -5,9 +5,9 @@ import { onScopeDispose, reactive, ref } from 'vue';
 import { getProducts } from '../api/products';
 
 export function useProductList() {
-  const filters = reactive<Pick<ProductQuery, 'category' | 'keyword' | 'status'>>({
+  const filters = reactive<Pick<ProductQuery, 'categoryId' | 'keyword' | 'status'>>({
     keyword: '',
-    category: '',
+    categoryId: undefined,
     status: '',
   });
   const query = reactive<ProductQuery>({ ...filters, page: 1, pageSize: 10 });
@@ -23,7 +23,11 @@ export function useProductList() {
     failed.value = false;
     items.value = [];
     try {
-      const result = await getProducts({ ...query });
+      const { categoryId, ...params } = query;
+      const result = await getProducts({
+        ...params,
+        ...(categoryId === undefined ? {} : { categoryId }),
+      });
       // 只让最新发出的请求更新页面，避免慢响应覆盖新筛选结果。
       if (current !== requestId) return;
       items.value = result.items;
@@ -44,7 +48,7 @@ export function useProductList() {
     return load();
   }
   function reset() {
-    Object.assign(filters, { keyword: '', category: '', status: '' });
+    Object.assign(filters, { keyword: '', categoryId: undefined, status: '' });
     return search();
   }
   function changePage(page: number) {

@@ -174,3 +174,5 @@ teacher、web、playground 和 backend-mock 已移除。保留 monorepo 是因�
 HTTPS 原理、首次配置和续期检查见 [HTTPS 证书申请与自动续期](docs/07-HTTPS证书申请与自动续期.md)。
 
 模块接口详解：[商品管理与 TypeScript 类型](docs/04-商品管理接口与TypeScript类型.md)、[任务看板与 TypeScript 类型](docs/02-任务看板接口与TypeScript类型.md)。
+
+商品分类采用独立 `categories` 表。迁移版本 3 会把已有商品的中文分类转换为 `category_id`；接口提交 `categoryId`，列表额外返回 `categoryName`。分类下拉框显示名称、选择值为数字 ID。

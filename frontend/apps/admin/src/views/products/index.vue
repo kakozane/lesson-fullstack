@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Product } from '#/api/products';
+import type { Category, Product } from '#/api/products';
 import { onMounted, ref } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { PageHeader } from '@vben/common';
@@ -36,7 +36,7 @@ const {
   changePage,
   changeSize,
 } = useProductList();
-const categories = ref<string[]>([]);
+const categories = ref<Category[]>([]);
 const categoriesFailed = ref(false);
 const selected = ref<Product[]>([]);
 const dialogVisible = ref(false);
@@ -130,16 +130,17 @@ onBeforeRouteLeave(() => {
         /></ElFormItem>
         <ElFormItem label="商品分类"
           ><ElSelect
-            v-model="filters.category"
+            v-model="filters.categoryId"
             clearable
+            :value-on-clear="() => undefined"
             placeholder="全部分类"
             style="width: 160px"
             @change="search"
             ><ElOption
               v-for="item in categories"
-              :key="item"
-              :value="item"
-              :label="item" /></ElSelect
+              :key="item.id"
+              :value="item.id"
+              :label="item.name" /></ElSelect
         ></ElFormItem>
         <ElFormItem label="销售状态"
           ><ElSelect
@@ -248,7 +249,7 @@ onBeforeRouteLeave(() => {
             </div></template
           ></ElTableColumn
         >
-        <ElTableColumn prop="category" label="分类" min-width="110" />
+        <ElTableColumn prop="categoryName" label="分类" min-width="110" />
         <ElTableColumn label="售价" min-width="110" align="right"
           ><template #default="{ row }"
             ><span class="font-medium"

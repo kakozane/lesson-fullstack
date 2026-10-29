@@ -21,7 +21,9 @@ type ProductService struct{ repo *repository.ProductRepository }
 func NewProductService(repo *repository.ProductRepository) *ProductService {
 	return &ProductService{repo: repo}
 }
-func Categories() []string { return []string{"数码配件", "办公文具", "生活好物"} }
+func (s *ProductService) Categories(ctx context.Context) ([]entity.Category, error) {
+	return s.repo.Categories(ctx)
+}
 func validate(p *dto.SaveRequest) error {
 	p.Name = strings.TrimSpace(p.Name)
 	p.SKU = strings.TrimSpace(p.SKU)
@@ -38,13 +40,7 @@ func validate(p *dto.SaveRequest) error {
 			return bad("商品编码仅支持字母、数字和短横线")
 		}
 	}
-	valid := false
-	for _, c := range Categories() {
-		if p.Category == c {
-			valid = true
-		}
-	}
-	if !valid {
+	if p.CategoryID < 1 {
 		return bad("请选择有效分类")
 	}
 	if p.PriceCents < 1 || p.PriceCents > 99999999 {
@@ -75,6 +71,9 @@ func (s *ProductService) List(ctx context.Context, q dto.ListQuery) (*dto.PageRe
 	if q.Page < 1 || q.Page > 1000000 || q.PageSize < 1 || q.PageSize > 100 {
 		return nil, apperr.New(400, "分页参数不合法")
 	}
+	if q.CategoryID < 0 {
+		return nil, apperr.New(400, "分类 ID 不合法")
+	}
 	q.Keyword = strings.TrimSpace(q.Keyword)
 	if utf8.RuneCountInString(q.Keyword) > 80 {
 		return nil, apperr.New(400, "搜索词不能超过 80 个字符")
@@ -82,27 +81,33 @@ func (s *ProductService) List(ctx context.Context, q dto.ListQuery) (*dto.PageRe
 	if q.Status != "" && q.Status != "0" && q.Status != "1" {
 		return nil, apperr.New(400, "状态参数不合法")
 	}
-	items, total, page, err := s.repo.ListPaged(ctx, q.Keyword, q.Category, q.Status, q.Page, q.PageSize)
+	items, total, page, err := s.repo.ListPaged(ctx, q.Keyword, q.CategoryID, q.Status, q.Page, q.PageSize)
 	if err != nil {
 		return nil, err
 	}
 	result := &dto.PageResult{Items: []dto.Product{}, Total: total, Page: page, PageSize: q.PageSize}
 	for _, p := range items {
-		result.Items = append(result.Items, dto.Product{ID: p.ID, Name: p.Name, SKU: p.SKU, Category: p.Category, PriceCents: p.PriceCents, Stock: p.Stock, Status: p.Status, Description: p.Description, UpdatedAt: p.UpdatedAt.In(time.FixedZone("UTC+8", 8*60*60)).Format("2006-01-02 15:04:05")})
+		result.Items = append(result.Items, dto.Product{ID: p.ID, Name: p.Name, SKU: p.SKU, CategoryID: p.CategoryID, CategoryName: p.Category.Name, PriceCents: p.PriceCents, Stock: p.Stock, Status: p.Status, Description: p.Description, UpdatedAt: p.UpdatedAt.In(time.FixedZone("UTC+8", 8*60*60)).Format("2006-01-02 15:04:05")})
 	}
 	return result, nil
 }
 func toEntity(p dto.SaveRequest) *entity.Product {
-	return &entity.Product{Name: p.Name, SKU: p.SKU, Category: p.Category, PriceCents: p.PriceCents, Stock: p.Stock, Status: *p.Status, Description: p.Description}
+	return &entity.Product{Name: p.Name, SKU: p.SKU, CategoryID: p.CategoryID, PriceCents: p.PriceCents, Stock: p.Stock, Status: *p.Status, Description: p.Description}
 }
 func (s *ProductService) Create(ctx context.Context, p dto.SaveRequest) error {
 	if err := validate(&p); err != nil {
+		return err
+	}
+	if err := s.validateCategory(ctx, p.CategoryID); err != nil {
 		return err
 	}
 	return storageError(s.repo.Create(ctx, toEntity(p)))
 }
 func (s *ProductService) Update(ctx context.Context, id int64, p dto.SaveRequest) error {
 	if err := validate(&p); err != nil {
+		return err
+	}
+	if err := s.validateCategory(ctx, p.CategoryID); err != nil {
 		return err
 	}
 	return storageError(s.repo.Update(ctx, id, toEntity(p)))
@@ -126,4 +131,15 @@ func (s *ProductService) BatchStatus(ctx context.Context, p dto.BatchStatusReque
 		return apperr.New(400, "部分商品已删除，请刷新后重试")
 	}
 	return err
+}
+
+func (s *ProductService) validateCategory(ctx context.Context, id int64) error {
+	exists, err := s.repo.HasCategory(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return apperr.New(400, "请选择有效分类")
+	}
+	return nil
 }

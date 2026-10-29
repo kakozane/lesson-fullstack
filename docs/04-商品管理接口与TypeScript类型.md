@@ -20,7 +20,7 @@
 
 | 接口名称 | 方法 | 完整路径 | 前端函数 | 成功的 data 类型 |
 |---|---|---|---|---|
-| 查询商品分类 | GET | `/api/categories` | `getCategories()` | `string[]` |
+| 查询商品分类 | GET | `/api/categories` | `getCategories()` | `Category[]` |
 | 查询商品列表 | GET | `/api/products` | `getProducts(params)` | `ProductPage` |
 | 新增商品 | POST | `/api/products` | `createProduct(data)` | `null` |
 | 编辑商品 | PUT | `/api/products/:id` | `updateProduct(id, data)` | `null` |
@@ -64,7 +64,8 @@ JSON 写入接口只接受一个 JSON 值，并拒绝未知字段；请求体上
 | `id` | `number` | 仅响应；编辑、删除时放 URL | 服务端生成的正整数 |
 | `name` | `string` | 必填 | 去首尾空白后 1～80 个字符 |
 | `sku` | `string` | 必填 | 去首尾空白后 1～32 位，只允许 ASCII 字母、数字和 `-`；必须唯一 |
-| `category` | `string` | 必填 | 必须等于分类接口返回的选项之一 |
+| `categoryId` | `number` | 必填 | 分类接口返回的有效 ID，必须为正整数 |
+| `categoryName` | `string` | 仅列表返回 | 分类名称，用于展示，不参与新增和编辑提交 |
 | `priceCents` | `number` | 必填 | 整数分，范围 1～99999999，即 0.01～999999.99 元 |
 | `stock` | `number` | 前端完整提交 | 整数，范围 0～999999；后端省略此字段时按 0 处理 |
 | `status` | `0 \| 1` | 必填，不能为 null | `0` 下架，`1` 上架；省略会校验失败 |
@@ -86,14 +87,14 @@ JSON 写入接口只接受一个 JSON 值，并拒绝未知字段；请求体上
 ```json
 {
   "code": 200,
-  "data": ["数码配件", "办公文具", "生活好物"],
+  "data": [{ "id": 1, "name": "数码配件" }, { "id": 2, "name": "办公文具" }, { "id": 3, "name": "生活好物" }],
   "message": ""
 }
 ```
 
 返回值是字符串数组，每个值既用于下拉展示，也用于新增、编辑和分类筛选。当前分类来自服务端固定选项，没有分类增删改接口。
 
-前端函数返回 `Promise<string[]>`。常见失败为 `401`，表示登录凭证无效。
+前端函数返回 `Promise<Category[]>`。常见失败为 `401`，表示登录凭证无效。
 
 ## 4. 查询商品列表
 
@@ -104,7 +105,7 @@ JSON 写入接口只接受一个 JSON 值，并拒绝未知字段；请求体上
 | 参数 | 前端类型 | 是否必传 | 默认值 | 规则 |
 |---|---|---|---|---|
 | `keyword` | `string` | 否 | `""` | 名称或 SKU 包含查询，去首尾空白后最多 80 字；`%`、`_` 按普通字符匹配 |
-| `category` | `string` | 否 | `""` | 精确匹配，空字符串表示全部分类 |
+| `categoryId` | `number` | 否 | 不传 | 选择分类时传数字 ID；默认和清空时省略此参数，查询全部分类 |
 | `status` | `'' \| 0 \| 1` | 否 | `""` | 空字符串表示全部；0 下架，1 上架 |
 | `page` | `number` | 否 | `1` | 整数，1～1000000 |
 | `pageSize` | `number` | 否 | `10` | 整数，1～100；页面常用 10、20、50 |
@@ -114,7 +115,7 @@ JSON 写入接口只接受一个 JSON 值，并拒绝未知字段；请求体上
 请求示例：
 
 ```http
-GET /api/products?keyword=鼠标&category=数码配件&status=1&page=1&pageSize=10
+GET /api/products?keyword=鼠标&categoryId=1&status=1&page=1&pageSize=10
 Authorization: Bearer <accessToken>
 ```
 
@@ -129,7 +130,8 @@ Authorization: Bearer <accessToken>
         "id": 42,
         "name": "无线鼠标",
         "sku": "CLASS-001",
-        "category": "数码配件",
+        "categoryId": 1,
+        "categoryName": "数码配件",
         "priceCents": 2990,
         "stock": 25,
         "status": 1,
@@ -154,7 +156,7 @@ Authorization: Bearer <accessToken>
 
 筛选条件之间使用 AND，商品默认按 `id` 倒序。超过最后一页的合法页码会被调整到最后一个有效页；无结果时 `items: []`、`total: 0`、`page: 1`。前端应使用响应中的 `page` 同步分页组件。
 
-列表查询中的未知分类是普通精确匹配条件，通常得到空列表；新增和编辑中的未知分类则返回 400。
+列表查询中的未知正整数分类 ID 得到空列表；负数或非法格式返回 HTTP 400。新增和编辑必须提交分类表中存在的正整数 ID，否则返回 HTTP 400。
 
 常见失败：分页范围或搜索词长度不合法返回 `400`；`status=2` 返回 `400`；无法解析分页 Query 返回 `400`，消息为 `查询参数格式错误`。
 
@@ -168,7 +170,7 @@ Authorization: Bearer <accessToken>
 {
   "name": "无线鼠标",
   "sku": "CLASS-001",
-  "category": "数码配件",
+  "categoryId": 1,
   "priceCents": 2990,
   "stock": 25,
   "status": 1,
@@ -204,7 +206,7 @@ Authorization: Bearer <accessToken>
 {
   "name": "无线鼠标 升级款",
   "sku": "CLASS-001",
-  "category": "数码配件",
+  "categoryId": 1,
   "priceCents": 3990,
   "stock": 0,
   "status": 0,
@@ -280,17 +282,22 @@ Authorization: Bearer <accessToken>
 
 对应文件：`frontend/apps/admin/src/api/products.ts`。下面保持现有函数名和调用方式，并补全写入接口的 `<null>` 返回类型以及批量请求类型。当前源码的部分写入函数没有显式泛型；补上泛型只改善类型约束，不改变后端响应。
 
-`ProductQuery` 的所有属性在前端类型中必填，是为了表示完整筛选状态；这不代表 HTTP 接口要求每个 Query 参数都必须提交。
+`ProductQuery.categoryId` 为可选属性：默认和清空分类时不传，选择分类后传数字 ID。其他属性表示完整的筛选与分页状态，这不代表 HTTP 接口要求每个 Query 参数都必须提交。
 
 ```ts
 import { requestClient } from '#/api/request';
 
 export type ProductStatus = 0 | 1;
 
+export interface Category {
+  id: number;
+  name: string;
+}
+
 export interface ProductInput {
   name: string;
   sku: string;
-  category: string;
+  categoryId: number;
   /** 整数分，例如 2990 表示 29.90 元。 */
   priceCents: number;
   stock: number;
@@ -300,13 +307,14 @@ export interface ProductInput {
 
 export interface Product extends ProductInput {
   id: number;
+  categoryName: string;
   /** UTC+8，YYYY-MM-DD HH:mm:ss。 */
   updatedAt: string;
 }
 
 export interface ProductQuery {
   keyword: string;
-  category: string;
+  categoryId?: number;
   status: '' | ProductStatus;
   page: number;
   pageSize: number;
@@ -324,8 +332,8 @@ export interface BatchStatusInput {
   status: ProductStatus;
 }
 
-export const getCategories = (): Promise<string[]> =>
-  requestClient.get<string[]>('/categories');
+export const getCategories = (): Promise<Category[]> =>
+  requestClient.get<Category[]>('/categories');
 
 export const getProducts = (params: ProductQuery): Promise<ProductPage> =>
   requestClient.get<ProductPage>('/products', { params });

@@ -1,8 +1,12 @@
 package bootstrap_test
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	productdto "lesson06/backend/internal/product/admin/dto"
+	productservice "lesson06/backend/internal/product/admin/service"
+	productrepository "lesson06/backend/internal/product/repository"
 	"os"
 	"testing"
 	"time"
@@ -77,8 +81,13 @@ func TestRunMySQL(t *testing.T) {
 		}
 	}
 	count("products", 36)
+	count("categories", 3)
+	var linked int
+	if err := db.QueryRow("SELECT COUNT(*) FROM products p JOIN categories c ON p.category_id=c.id").Scan(&linked); err != nil || linked != 36 {
+		t.Fatalf("分类迁移失败: %d %v", linked, err)
+	}
 	count("tasks", 9)
-	count("lesson_migrations", 2)
+	count("lesson_migrations", 3)
 	var initialVersion int
 	if err := db.QueryRow("SELECT version FROM task_board_meta WHERE id=1").Scan(&initialVersion); err != nil || initialVersion != 1 {
 		t.Fatalf("首次看板版本 = %d，错误 = %v", initialVersion, err)
@@ -96,6 +105,17 @@ func TestRunMySQL(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	// 模拟已有版本 2 的旧数据库，再验证原地升级。
+	for _, statement := range []string{
+		"UPDATE products p JOIN categories c ON c.id=p.category_id SET p.category=c.name, p.updated_at=p.updated_at",
+		"DELETE FROM lesson_migrations WHERE version=3",
+		"ALTER TABLE products DROP COLUMN category_id",
+		"DROP TABLE categories",
+	} {
+		if _, err := db.Exec(statement); err != nil {
+			t.Fatal(err)
+		}
+	}
 	restarted, err := bootstrap.InitializeApp(cfg, string(productSeedSQL), string(taskSeedSQL))
 	if err != nil {
 		t.Fatal(err)
@@ -103,7 +123,7 @@ func TestRunMySQL(t *testing.T) {
 	t.Cleanup(func() { restarted.SQLDB.Close() })
 	count("products", 35)
 	count("tasks", 8)
-	count("lesson_migrations", 2)
+	count("lesson_migrations", 3)
 
 	var name, description string
 	var stock, status int
@@ -124,4 +144,47 @@ func TestRunMySQL(t *testing.T) {
 	if err := db.QueryRow("SELECT version FROM task_board_meta WHERE id=1").Scan(&version); err != nil || version != 42 {
 		t.Fatalf("重复启动后的看板版本 = %d，错误 = %v", version, err)
 	}
+	// 验证分类查询、ID 保存、列表回填及分类筛选。
+	service := productservice.NewProductService(productrepository.NewProductRepository(restarted.DB))
+	ctx := context.Background()
+	categories, err := service.Categories(ctx)
+	if err != nil || len(categories) != 3 || categories[0].ID != 1 {
+		t.Fatalf("categories: %v %v", categories, err)
+	}
+	offline := 0
+	input := productdto.SaveRequest{Name: "分类测试", SKU: "CATEGORY-TEST", CategoryID: 2, PriceCents: 100, Stock: 1, Status: &offline}
+	if err := service.Create(ctx, input); err != nil {
+		t.Fatal(err)
+	}
+	page, err := service.List(ctx, productdto.ListQuery{Keyword: input.SKU, CategoryID: 2, Page: 1, PageSize: 10})
+	if err != nil || len(page.Items) != 1 {
+		t.Fatalf("list: %v %v", page, err)
+	}
+	item := page.Items[0]
+	if item.CategoryID != 2 || item.CategoryName != "办公文具" {
+		t.Fatalf("category fields: %+v", item)
+	}
+	input.CategoryID = 3
+	if err := service.Update(ctx, item.ID, input); err != nil {
+		t.Fatal(err)
+	}
+	page, err = service.List(ctx, productdto.ListQuery{Keyword: input.SKU, CategoryID: 2, Page: 1, PageSize: 10})
+	if err != nil || page.Total != 0 {
+		t.Fatal("分类筛选未更新")
+	}
+	input.CategoryID = 99999
+	if err := service.Update(ctx, item.ID, input); err == nil {
+		t.Fatal("无效分类应被拒绝")
+	}
+	if err := service.Delete(ctx, item.ID); err != nil {
+		t.Fatal(err)
+	}
+	// 再次启动不会重置分类或重复迁移。
+	again, err := bootstrap.InitializeApp(cfg, string(productSeedSQL), string(taskSeedSQL))
+	if err != nil {
+		t.Fatal(err)
+	}
+	again.SQLDB.Close()
+	count("lesson_migrations", 3)
+
 }

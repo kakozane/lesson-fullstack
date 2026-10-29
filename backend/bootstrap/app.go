@@ -44,6 +44,10 @@ func InitializeApp(cfg *config.Config, productSeedSQL, taskSeedSQL string) (*App
 		sqlDB.Close()
 		return nil, err
 	}
+	if err = initializeCategories(sqlDB); err != nil {
+		sqlDB.Close()
+		return nil, err
+	}
 	sessions := authservice.NewAuthService(cfg.AdminPassword)
 	repo := repository.NewProductRepository(db)
 	products := productservice.NewProductService(repo)

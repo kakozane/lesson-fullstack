@@ -15,6 +15,23 @@ afterEach(() => {
 });
 const emptyPage = { items: [], total: 0, page: 1, pageSize: 10 };
 describe('商品列表状态', () => {
+  it('默认、清空和重置时省略分类参数，选中时传数字 ID', async () => {
+    vi.mocked(getProducts).mockResolvedValue(emptyPage);
+    const state = setup();
+    await state.load();
+    expect(vi.mocked(getProducts).mock.lastCall?.[0]).not.toHaveProperty('categoryId');
+    state.filters.categoryId = 2;
+    await state.search();
+    expect(getProducts).toHaveBeenLastCalledWith(expect.objectContaining({ categoryId: 2 }));
+    state.filters.categoryId = undefined;
+    await state.search();
+    expect(vi.mocked(getProducts).mock.lastCall?.[0]).not.toHaveProperty('categoryId');
+    state.filters.categoryId = 3;
+    await state.search();
+    await state.reset();
+    expect(vi.mocked(getProducts).mock.lastCall?.[0]).not.toHaveProperty('categoryId');
+  });
+
   it('筛选保留下架值 0 并重置页码；重置清空全部条件', async () => {
     vi.mocked(getProducts).mockResolvedValue(emptyPage);
     const state = setup();
@@ -28,7 +45,7 @@ describe('商品列表状态', () => {
     await state.reset();
     expect(state.query).toEqual({
       keyword: '',
-      category: '',
+      categoryId: undefined,
       status: '',
       page: 1,
       pageSize: 10,

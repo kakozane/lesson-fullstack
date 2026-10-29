@@ -4,33 +4,34 @@ package dto
 type SaveRequest struct {
 	Name        string `json:"name"`
 	SKU         string `json:"sku"`
-	Category    string `json:"category"`
+	CategoryID  int64  `json:"categoryId"`
 	PriceCents  int64  `json:"priceCents"`
 	Stock       int    `json:"stock"`
 	Status      *int   `json:"status"`
 	Description string `json:"description"`
 }
 type ListQuery struct {
-	Keyword  string `form:"keyword"`
-	Category string `form:"category"`
-	Status   string `form:"status"`
-	Page     int    `form:"page,default=1"`
-	PageSize int    `form:"pageSize,default=10"`
+	Keyword    string `form:"keyword"`
+	CategoryID int64  `form:"categoryId"`
+	Status     string `form:"status"`
+	Page       int    `form:"page,default=1"`
+	PageSize   int    `form:"pageSize,default=10"`
 }
 type BatchStatusRequest struct {
 	IDs    []int64 `json:"ids"`
 	Status *int    `json:"status"`
 }
 type Product struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	SKU         string `json:"sku"`
-	Category    string `json:"category"`
-	PriceCents  int64  `json:"priceCents"`
-	Stock       int    `json:"stock"`
-	Status      int    `json:"status"`
-	Description string `json:"description"`
-	UpdatedAt   string `json:"updatedAt"`
+	CategoryName string `json:"categoryName"`
+	ID           int64  `json:"id"`
+	Name         string `json:"name"`
+	SKU          string `json:"sku"`
+	CategoryID   int64  `json:"categoryId"`
+	PriceCents   int64  `json:"priceCents"`
+	Stock        int    `json:"stock"`
+	Status       int    `json:"status"`
+	Description  string `json:"description"`
+	UpdatedAt    string `json:"updatedAt"`
 }
 type PageResult struct {
 	Items    []Product `json:"items"`

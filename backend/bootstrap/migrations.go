@@ -9,7 +9,8 @@ func initialize(db *sql.DB, seedSQL string) error {
  id BIGINT PRIMARY KEY AUTO_INCREMENT,
  name VARCHAR(80) NOT NULL,
  sku VARCHAR(32) NOT NULL UNIQUE,
- category VARCHAR(32) NOT NULL,
+ category VARCHAR(32) NOT NULL DEFAULT '',
+ category_id BIGINT NULL,
  price_cents BIGINT NOT NULL,
  stock INT NOT NULL,
  status TINYINT NOT NULL,
@@ -39,6 +40,13 @@ func initialize(db *sql.DB, seedSQL string) error {
 		return err
 	}
 	if n == 1 {
+		if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS categories (id BIGINT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(32) NOT NULL UNIQUE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`); err != nil {
+			return err
+		}
+		if _, err := tx.Exec("INSERT IGNORE INTO categories(id,name) VALUES (1,'数码配件'),(2,'办公文具'),(3,'生活好物')"); err != nil {
+			return err
+		}
+
 		if _, err := tx.Exec(seedSQL); err != nil {
 			return err
 		}

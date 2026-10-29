@@ -14,7 +14,7 @@ import (
 
 func validProduct() dto.SaveRequest {
 	s := 0
-	return dto.SaveRequest{Name: "测试", SKU: "TEST-01", Category: Categories()[0], PriceCents: 1, Stock: 0, Status: &s}
+	return dto.SaveRequest{Name: "测试", SKU: "TEST-01", CategoryID: 1, PriceCents: 1, Stock: 0, Status: &s}
 }
 func TestValidate(t *testing.T) {
 	for _, tc := range []struct {
@@ -27,7 +27,7 @@ func TestValidate(t *testing.T) {
 		{"bad sku", func(p *dto.SaveRequest) { p.SKU = "a b" }, false},
 		{"missing status", func(p *dto.SaveRequest) { p.Status = nil }, false},
 		{"negative price", func(p *dto.SaveRequest) { p.PriceCents = -1 }, false},
-		{"unknown category", func(p *dto.SaveRequest) { p.Category = "其他" }, false},
+		{"unknown category", func(p *dto.SaveRequest) { p.CategoryID = 0 }, false},
 		{"long description", func(p *dto.SaveRequest) { p.Description = strings.Repeat("中", 501) }, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

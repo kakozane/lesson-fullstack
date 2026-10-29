@@ -109,3 +109,7 @@ RUN_MYSQL_MIGRATION_TEST=1 go test -race ./bootstrap -run TestRunMySQL -count=1 
 ## 分享文件
 
 分享 `migration` 中的 SQL、`bootstrap` 和其他 Go 源码、`go.mod`、`go.sum`、`run.sh` 和 `.env.example`。项目的 `.gitignore` 已忽略 `backend/.env`，但手动压缩目录不会自动应用 Git 忽略规则，应自行排除真实 `.env`、编译产物和本地测试输出。
+
+### 分类迁移（版本 3）
+
+`category_migration.go` 创建 `categories` 表，将旧商品分类名称转换成 `products.category_id`，保留已有商品和更新时间。重复启动不会重新填充或覆盖分类。历史 `category` 列保留用于旧库升级兼容，业务不再读写它；`migration/001_products_seed.sql` 已使用数字分类 ID，新环境直接写入 ID。

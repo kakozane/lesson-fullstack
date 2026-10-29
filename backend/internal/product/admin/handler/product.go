@@ -12,7 +12,14 @@ import (
 type Handler struct{ products *service.ProductService }
 
 func New(products *service.ProductService) *Handler { return &Handler{products: products} }
-func (h *Handler) Categories(c *gin.Context)        { response.Success(c, service.Categories(), "") }
+func (h *Handler) Categories(c *gin.Context) {
+	items, err := h.products.Categories(c.Request.Context())
+	if err != nil {
+		response.Fail(c, err)
+		return
+	}
+	response.Success(c, items, "")
+}
 func (h *Handler) List(c *gin.Context) {
 	q := dto.ListQuery{Page: 1, PageSize: 10}
 	if err := c.ShouldBindQuery(&q); err != nil {
