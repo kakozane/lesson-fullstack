@@ -5,9 +5,9 @@
 在 frontend 根目录执行：
 
 ```sh
-corepack pnpm dev:starter
-corepack pnpm typecheck:starter
-corepack pnpm build:starter
+pnpm dev:starter
+pnpm typecheck:starter
+pnpm build:starter
 ```
 
 开发地址 http://localhost:5667 ，完整参考应用在 apps/admin（http://localhost:5666）。两者共用 http://127.0.0.1:8080 的 Go API。

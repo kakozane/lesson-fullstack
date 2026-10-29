@@ -260,43 +260,24 @@ mise use --path ./mise.toml --pin node@24 go@1.26
 
 接着检查生成的 `mise.toml`，确认工具版本符合项目约定，再将它纳入团队版本管理。本文只提供接入步骤，课程项目是否已接入应以根目录实际文件为准。
 
-### 7.2 Node.js、pnpm 和 Corepack 的分工
+### 7.2 安装并使用 pnpm
 
-本课程沿用已有的 Corepack 工作流：
+mise 负责选择 Node.js、Go 版本，pnpm 负责安装前端依赖和运行 workspace 脚本。项目的 `frontend/package.json` 通过 `packageManager` 声明使用 `pnpm@11.4.0`。
 
-| 工具或配置 | 本项目中的职责 |
-|---|---|
-| mise | 选择 Node.js、Go 版本 |
-| Corepack | 根据项目约定运行 pnpm |
-| `packageManager` | 声明项目使用 `pnpm@11.4.0` |
-| pnpm | 安装依赖、执行 workspace 脚本 |
-
-先在已选择好 Node.js 的终端检查 Corepack：
+选好 Node.js 版本后，安装 pnpm：
 
 ```sh
-corepack --version
+npm install -g pnpm@11.4.0
+pnpm --version
 ```
 
-若找不到命令，可在当前 Node.js 环境中安装：
-
-```sh
-npm install -g corepack
-```
-
-安装发生在当前 npm 对应的环境中；遇到同名命令冲突时先检查安装来源，不直接使用 `--force` 覆盖。Corepack 也支持更新，但课程中应保持已验证的工具组合。[Corepack 官方说明](https://github.com/nodejs/corepack)
-
-然后进入课程的 frontend 目录：
+然后进入项目的 frontend 目录：
 
 ```sh
 cd frontend
-corepack pnpm --version
-corepack pnpm install --frozen-lockfile
-corepack pnpm dev:starter
+pnpm install --frozen-lockfile
+pnpm dev:starter
 ```
-
-这里预期 pnpm 版本为 `11.4.0`。使用 `corepack pnpm` 可明确调用 Corepack；若希望直接输入 `pnpm`，可按 Corepack 文档启用对应 shim，并确认 PATH 中没有其他同名入口。
-
-mise 也能直接管理 pnpm，但本项目已经通过 Corepack 和 `packageManager` 约定版本，因此这份接入示例不再额外声明 pnpm。不要假定所有 Node.js 都自带 Corepack：Node.js 25 起不再随发行包提供它。[mise 的 Node.js 说明](https://mise.jdx.dev/lang/node.html)、[Node.js 发行说明](https://github.com/nodejs/node/blob/main/doc/contributing/distribution.md)
 
 ## 8. 进阶：把常用命令变成项目任务
 
@@ -306,17 +287,17 @@ mise 也能直接管理 pnpm，但本项目已经通过 Corepack 和 `packageMan
 [tasks."front:dev"]
 description = "启动课堂初始版前端"
 dir = "{{config_root}}/frontend"
-run = "corepack pnpm dev:starter"
+run = "pnpm dev:starter"
 
 [tasks."front:check"]
 description = "检查课堂前端类型"
 dir = "{{config_root}}/frontend"
-run = "corepack pnpm typecheck:starter"
+run = "pnpm typecheck:starter"
 
 [tasks."front:build"]
 description = "构建课堂前端"
 dir = "{{config_root}}/frontend"
-run = "corepack pnpm build:starter"
+run = "pnpm build:starter"
 
 [tasks."back:dev"]
 description = "启动 Gin 后端"
@@ -430,11 +411,9 @@ mise exec -- go env GOTOOLCHAIN
 
 需要区分“mise 选中的 go 入口”和“Go 最终执行的工具链”。严格固定时可以研究 `GOTOOLCHAIN=local`，但应先保证固定版本满足模块要求，否则构建会报版本不足。[Go 工具链说明](https://mise.jdx.dev/lang/go.html)
 
-### 10.4 切换 Node.js 后找不到 pnpm 或 Corepack
+### 10.4 切换 Node.js 后找不到 pnpm
 
-检查当前 `node`、`npm`、`corepack`、`pnpm` 的来源。全局安装的命令与 shim 可能位于不同目录，不能假设它们会自动随 Node.js 一起迁移。
-
-对于本课程，回到 `frontend` 目录运行 `corepack pnpm --version`，确认它与 `packageManager` 一致。若 Corepack 缺失，按第 7 节处理；不要直接改项目约定来迁就当前机器。[Corepack 官方说明](https://github.com/nodejs/corepack)
+全局安装的命令可能与 Node.js 版本关联。切换版本后，先运行 `node --version` 和 `pnpm --version` 检查当前环境。如果找不到 pnpm，在当前 Node.js 环境重新执行 `npm install -g pnpm@11.4.0`，再进入 `frontend` 目录运行项目。
 
 ### 10.5 工具下载失败
 

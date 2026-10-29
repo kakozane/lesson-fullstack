@@ -4,7 +4,7 @@
 
 现在有两个菜单：**商品管理** `/products`、**任务看板** `/tasks`。选择 [任务看板实战讲义](docs/01-任务看板实战.md)或 [商品管理实战讲义](docs/03-商品管理实战.md)，从初始版开始，按步骤完成代码、原理学习与结果验证。两条路线相互独立。
 
-补充学习：[mise 全栈开发环境管理](docs/05-mise全栈开发环境管理.md)，介绍多语言版本固定、目录切换、Corepack 配合与项目任务，可独立阅读和练习。
+补充学习：[mise 全栈开发环境管理](docs/05-mise全栈开发环境管理.md)，介绍多语言版本固定、目录切换与项目任务，可独立阅读和练习。
 
 ## 学习资料怎么选
 
@@ -21,11 +21,18 @@
 
 前端提供独立初始应用 `frontend/apps/starter`，保留登录、布局和两个菜单，业务页只有标题；`frontend/apps/admin` 保留完整参考实现。
 
-在 frontend 目录执行 `corepack pnpm dev:starter`，访问 http://localhost:6112；完整版仍用 `corepack pnpm dev:admin`，地址 http://localhost:6111。两者可同时运行，共用 Go 与数据库。具体实现步骤见对应的实战讲义。
+在 frontend 目录执行 `pnpm dev:starter`，访问 http://localhost:6112；完整版仍用 `pnpm dev:admin`，地址 http://localhost:6111。两者可同时运行，共用 Go 与数据库。具体实现步骤见对应的实战讲义。
 
 ## 启动
 
 环境：Node.js 22.18+ 或 24、pnpm 11.4.0（以 frontend/package.json 为准）、Go 1.26、MySQL 8。
+
+首次准备前端环境时，在已安装 Node.js 的终端安装 pnpm：
+
+```sh
+npm install -g pnpm@11.4.0
+pnpm --version
+```
 
 后端终端：
 
@@ -46,13 +53,13 @@ Go 会自动读取当前工作目录的 `.env`，因此请在 `backend` 目录�
 ```sh
 # 在项目根目录打开另一个终端
 cd frontend
-corepack pnpm install --frozen-lockfile
-corepack pnpm dev
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
 访问 http://localhost:6111 ，账号 `admin`，课堂默认密码 `123456`（由 backend/.env 的 ADMIN_PASSWORD 配置）。API：http://127.0.0.1:8080/api/health 。
 
-必须在 frontend 目录运行 pnpm，让 Corepack 读取固定版本；如果从上级目录用全局不同版本的 pnpm 启动，会遇到包管理器版本检查失败。
+请在 frontend 目录运行 pnpm，并使用项目约定的 pnpm 11.4.0。
 
 启动后自动创建独立数据库 `lesson06_shop`、商品表、迁移记录和 36 条演示商品。只在首次初始化时插入演示数据，重启不会覆盖修改或补回删除的数据。不读取或修改其他业务库。新版增加独立任务表和看板版本表，迁移版本 2 首次插入 9 条任务，不重置现有商品。
 
@@ -61,12 +68,12 @@ corepack pnpm dev
 在 `frontend` 目录执行：
 
 ```sh
-corepack pnpm lint          # Oxlint 检查 JS、TS 和 Vue 脚本
-corepack pnpm lint:fix      # 自动修复可修复的问题
-corepack pnpm format        # Oxfmt 格式化
-corepack pnpm format:check  # 只检查格式，不修改文件
-corepack pnpm check:type    # Vue 模板与 TypeScript 类型检查
-corepack pnpm lint:style    # 独立的样式检查
+pnpm lint          # Oxlint 检查 JS、TS 和 Vue 脚本
+pnpm lint:fix      # 自动修复可修复的问题
+pnpm format        # Oxfmt 格式化
+pnpm format:check  # 只检查格式，不修改文件
+pnpm check:type    # Vue 模板与 TypeScript 类型检查
+pnpm lint:style    # 独立的样式检查
 ```
 
 两个应用和共享包共用 `oxlint.config.ts`、`oxfmt.config.ts`，具体规则位于 `internal/lint-configs`。已移除 ESLint 执行入口及配置包，Oxlint 使用原生规则；规则中的 `eslint/` 名称是 Oxlint 的兼容命名，并不调用 ESLint。
@@ -142,11 +149,11 @@ teacher、web、playground 和 backend-mock 已移除。保留 monorepo 是因�
  go build ./...
 
 # frontend 目录
- corepack pnpm typecheck:starter
- corepack pnpm build:starter
- corepack pnpm -F @vben/admin run typecheck
- corepack pnpm exec vitest run apps/admin/src/composables/use-product-list.test.ts apps/admin/src/composables/use-task-board.test.ts apps/admin/src/views/tasks/task-meta.test.ts
- corepack pnpm build
+ pnpm typecheck:starter
+ pnpm build:starter
+ pnpm -F @vben/admin run typecheck
+ pnpm exec vitest run apps/admin/src/composables/use-product-list.test.ts apps/admin/src/composables/use-task-board.test.ts apps/admin/src/views/tasks/task-meta.test.ts
+ pnpm build
 
 ```
 
