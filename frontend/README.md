@@ -5,7 +5,7 @@ Vue3 + TypeScript + Vben + Element Plus 多包项目，包含两个独立应用�
 | 应用 | 用途 | 启动 | 地址 |
 |---|---|---|---|
 | apps/admin | 完整参考版本 | pnpm dev:admin | http://localhost:6111 |
-| apps/starter | 课堂初始版本，业务页仅标题 | pnpm dev:starter | http://localhost:6112 |
+| apps/starter | 课堂初始版本，商品管理含静态样式 | pnpm dev:starter | http://localhost:6112 |
 
 ```sh
 # 在本目录安装依赖

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { FormInstance, FormRules } from 'element-plus';
 import type { Category, Product, ProductInput } from '#/api/products';
-import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
-import { onBeforeRouteLeave } from 'vue-router';
+import { nextTick, reactive, ref, watch } from 'vue';
 import {
   ElButton,
   ElDialog,
@@ -11,7 +10,6 @@ import {
   ElInput,
   ElInputNumber,
   ElMessage,
-  ElMessageBox,
   ElOption,
   ElSelect,
   ElSwitch,
@@ -35,10 +33,6 @@ const form = reactive({
   status: 0 as 0 | 1,
   description: '',
 });
-let initial = '';
-const dirty = computed(
-  () => props.modelValue && JSON.stringify(form) !== initial,
-);
 const rules: FormRules = {
   name: [
     {
@@ -106,40 +100,14 @@ watch(
             description: '',
           },
     );
-    initial = JSON.stringify(form);
     await nextTick();
     formRef.value?.clearValidate();
   },
 );
-async function canLeave() {
-  if (saving.value) {
-    ElMessage.warning('正在保存，请稍候');
-    return false;
-  }
-  if (!dirty.value) return true;
-  try {
-    await ElMessageBox.confirm('尚有未保存的修改，确定放弃吗？', '放弃修改', {
-      type: 'warning',
-      confirmButtonText: '放弃修改',
-      cancelButtonText: '继续编辑',
-    });
-    return true;
-  } catch {
-    return false;
-  }
+function close() {
+  if (saving.value) return;
+  emit('update:modelValue', false);
 }
-async function close() {
-  if (await canLeave()) emit('update:modelValue', false);
-}
-onBeforeRouteLeave(canLeave);
-function beforeUnload(event: BeforeUnloadEvent) {
-  if (dirty.value || saving.value) {
-    event.preventDefault();
-    event.returnValue = '';
-  }
-}
-window.addEventListener('beforeunload', beforeUnload);
-onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload));
 async function submit() {
   if (saving.value) return;
   saving.value = true;
