@@ -24,4 +24,4 @@ corepack pnpm build
 
 课堂修改 apps/starter/src/views/products/index.vue 或 apps/starter/src/views/tasks/index.vue；API 文件已经给出。完整实现留在 apps/admin/src 的对应目录。
 
-完整启动说明见 ../README.md，初始版操作见 ../docs/08-课堂初始版使用说明.md。
+完整启动说明见 ../README.md，初始版操作见 ../docs/01-课堂初始版使用说明.md。

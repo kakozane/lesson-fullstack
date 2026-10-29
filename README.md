@@ -1,16 +1,27 @@
 # Lesson 06 · Vue3 + Go 商品管理与任务看板实战
 
-基于 Vben Admin + Element Plus 的商品管理与任务看板课堂项目。后端使用 Gin + GORM，参考 aiagent_course 的业务模块分层。Go API 在课前准备好，课堂集中讲前端业务实现，总时长 55 分钟 + 5 分钟答疑。
+基于 Vben Admin + Element Plus 的商品管理与任务看板课堂项目。后端使用 Gin + GORM，参考 aiagent_course 的业务模块分层。Go API 已提供，实战重点是前端业务实现。
 
-现在有两个菜单：**商品管理** `/products`、**任务看板** `/tasks`。从课堂初始版现场编写时，使用 [任务看板逐步讲义](docs/09-从初始版实战任务看板.md)（主讲）或 [商品管理逐步讲义](docs/10-从初始版实战商品管理.md)（备选）。两份均为可投屏、可课后自学的学员讲义，包含逐步文件代码、原理说明、结果验证与练习；每份按 55 分钟实战 + 5 分钟讨论安排，一次选择一条路线。原 `01`、`06` 文档保留为课程概览和源码说明。
+现在有两个菜单：**商品管理** `/products`、**任务看板** `/tasks`。选择 [任务看板实战讲义](docs/02-任务看板实战讲义.md)或 [商品管理实战讲义](docs/04-商品管理实战讲义.md)，从初始版开始，按步骤完成代码、原理学习、结果验证与拓展练习。两条路线相互独立。
 
-补充学习：[mise 全栈开发环境管理](docs/11-mise全栈开发环境管理.md)，介绍多语言版本固定、目录切换、Corepack 配合与项目任务，可独立阅读和练习。
+补充学习：[mise 全栈开发环境管理](docs/06-mise全栈开发环境管理.md)，介绍多语言版本固定、目录切换、Corepack 配合与项目任务，可独立阅读和练习。
+
+## 学习资料怎么选
+
+先阅读 [初始版使用说明](docs/01-课堂初始版使用说明.md)，启动同一个 starter 后台。选择感兴趣的一条路线，无须先完成另一条。
+
+| 学习路线 | 按顺序实战 | 随时查阅 |
+|---|---|---|
+| 任务看板 | [任务看板实战讲义](docs/02-任务看板实战讲义.md) | [任务看板接口与 TS 类型](docs/03-任务看板接口与TypeScript类型.md) |
+| 商品管理 | [商品管理实战讲义](docs/04-商品管理实战讲义.md) | [商品管理接口与 TS 类型](docs/05-商品管理接口与TypeScript类型.md) |
+
+06～08 是补充资料：mise 环境管理、线上部署、HTTPS 自动续期，可按需阅读。
 
 ## 初始版与完整版
 
 前端新增独立课堂应用 `frontend/apps/starter`，保留登录、布局和两个菜单，业务页只有标题；`frontend/apps/admin` 保留完整答案。
 
-在 frontend 目录执行 `corepack pnpm dev:starter`，访问 http://localhost:5667；完整版仍用 `corepack pnpm dev:admin`，地址 http://localhost:5666。两者可同时运行，共用 Go 与数据库。具体操作见 `docs/08-课堂初始版使用说明.md`。
+在 frontend 目录执行 `corepack pnpm dev:starter`，访问 http://localhost:5667；完整版仍用 `corepack pnpm dev:admin`，地址 http://localhost:5666。两者可同时运行，共用 Go 与数据库。具体操作见 `docs/01-课堂初始版使用说明.md`。
 
 ## 启动
 
@@ -99,17 +110,8 @@ backend/
   run.sh                     可选启动脚本，等同于在 backend 执行 go run .
   tests/smoke.py             商品真实 API 回归
   tests/task_smoke.py        任务真实 API 与并发版本回归
-docs/01-课程讲义.md           分钟级流程、现场讲法与源码定位
-docs/02-接口契约.md           前端开发使用的接口说明
-docs/03-课堂验收与练习.md     演示清单、练习和故障处理
-docs/04-验证记录.md           已执行检查及边界
-docs/05-后端分层架构.md       Gin + GORM 结构与参考项目对照
-docs/06-任务看板与组件实战.md 看板版 60 分钟课程、组件与原文对应
-docs/07-任务接口与验收.md     任务契约、排序与版本、实测记录
-docs/08-课堂初始版使用说明.md 初始版启动、编写入口与课堂安排
-docs/09-从初始版实战任务看板.md 从标题页到拖拽看板，逐步代码与原理
-docs/10-从初始版实战商品管理.md 从标题页到批量管理，逐步代码与原理
-docs/11-mise全栈开发环境管理.md 多语言版本管理、项目配置与常用任务
+docs/                        两条独立实战路线与配套参考资料
+
 ```
 
 teacher、web、playground 和 backend-mock 已移除。保留 monorepo 是因为 admin 和 starter 共用 workspace 共享包，无需把 Vben 拆成另一套架构。原来的多端模板说明已替换为本项目说明。
@@ -151,4 +153,8 @@ teacher、web、playground 和 backend-mock 已移除。保留 monorepo 是因�
 
 完成版演示：[test.retniw.cc](https://test.retniw.cc)，账号 `admin` / `123456`。访问者共用演示数据，初始版仅供本地课堂实战。
 
-发布流程：推送 GitHub `main` → Actions 检查并构建 → 推送阿里云 ACR → 服务器 Docker Compose 更新。配置与运维命令见 [线上部署与自动发布](docs/12-线上部署与自动发布.md)。
+发布流程：推送 GitHub `main` → Actions 检查并构建 → 推送阿里云 ACR → 服务器 Docker Compose 更新。配置与运维命令见 [线上部署与自动发布](docs/07-线上部署与自动发布.md)。
+
+HTTPS 原理、首次配置和续期检查见 [HTTPS 证书申请与自动续期](docs/08-HTTPS证书申请与自动续期.md)。
+
+模块接口详解：[商品管理与 TypeScript 类型](docs/05-商品管理接口与TypeScript类型.md)、[任务看板与 TypeScript 类型](docs/03-任务看板接口与TypeScript类型.md)。
