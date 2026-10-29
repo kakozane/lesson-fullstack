@@ -2,6 +2,10 @@ package service
 
 import (
 	"context"
+	"errors"
+	"github.com/go-sql-driver/mysql"
+	"gorm.io/gorm"
+	"lesson06/backend/internal/pkg/apperr"
 	"strings"
 	"testing"
 
@@ -52,5 +56,18 @@ func TestInvalidBatch(t *testing.T) {
 		if err := s.BatchStatus(context.Background(), req); err == nil {
 			t.Fatalf("accepted batch: %+v", req)
 		}
+	}
+}
+
+func TestStorageBusinessErrorsReturn400(t *testing.T) {
+	for _, source := range []error{gorm.ErrRecordNotFound, &mysql.MySQLError{Number: 1062}} {
+		var business *apperr.Error
+		if err := storageError(source); !errors.As(err, &business) || business.Code != 400 {
+			t.Fatalf("expected business code 400, got %v", err)
+		}
+	}
+	unexpected := errors.New("database unavailable")
+	if storageError(unexpected) != unexpected {
+		t.Fatal("unexpected errors must remain server errors")
 	}
 }

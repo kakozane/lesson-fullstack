@@ -64,9 +64,9 @@ func TestHTTPContract(t *testing.T) {
 			if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
 				t.Fatal(err)
 			}
-			expectedCode := tc.status
-			if expectedCode == 200 {
-				expectedCode = 0
+			expectedCode := 400
+			if tc.status == 200 || tc.status == 401 {
+				expectedCode = tc.status
 			}
 			if body["code"] != float64(expectedCode) {
 				t.Fatalf("code %v", body)

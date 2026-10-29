@@ -48,16 +48,16 @@ func validate(p *dto.SaveRequest) error {
 }
 func result(items []entity.Task, version int64, err error) (*dto.Board, error) {
 	if errors.Is(err, repository.ErrConflict) {
-		return nil, apperr.New(409, "看板已被其他操作更新，请刷新后重试")
+		return nil, apperr.New(400, "看板已被其他操作更新，请刷新后重试")
 	}
 	if errors.Is(err, repository.ErrLimit) {
-		return nil, apperr.New(409, "本课堂看板最多支持 200 条任务")
+		return nil, apperr.New(400, "本课堂看板最多支持 200 条任务")
 	}
 	if errors.Is(err, repository.ErrAnchor) {
 		return nil, apperr.New(400, "目标位置不合法，请刷新后重试")
 	}
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, apperr.New(404, "任务不存在或已删除")
+		return nil, apperr.New(400, "任务不存在或已删除")
 	}
 	if err != nil {
 		return nil, err

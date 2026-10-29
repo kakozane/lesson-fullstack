@@ -11,7 +11,14 @@ const props = defineProps<{
   dragDisabled: boolean;
 }>();
 defineEmits<{ edit: [Task]; remove: [Task]; copy: [Task] }>();
-const priority = computed(() => priorities.find((item) => item.value === props.task.priority)!);
+const priority = computed(
+  () =>
+    priorities.find((item) => item.value === props.task.priority) ?? {
+      value: props.task.priority,
+      label: '未知',
+      type: 'info' as const,
+    },
+);
 </script>
 
 <template>

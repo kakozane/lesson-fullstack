@@ -103,7 +103,7 @@ describe('任务看板状态', () => {
     vi.mocked(getTaskBoard)
       .mockResolvedValueOnce(initial)
       .mockResolvedValueOnce({ ...initial, version: 8, overdue: 2 });
-    vi.mocked(moveTask).mockRejectedValue({ response: { status: 409 } });
+    vi.mocked(moveTask).mockRejectedValue({ response: { status: 400 } });
     const state = setup();
     await state.refresh();
     await state.move({ id: 1, status: 'done', beforeId: 0 });

@@ -63,11 +63,11 @@ func validate(p *dto.SaveRequest) error {
 }
 func storageError(err error) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return apperr.New(404, "商品不存在或已删除")
+		return apperr.New(400, "商品不存在或已删除")
 	}
 	var duplicate *mysql.MySQLError
 	if errors.As(err, &duplicate) && duplicate.Number == 1062 {
-		return apperr.New(409, "商品编码已存在")
+		return apperr.New(400, "商品编码已存在")
 	}
 	return err
 }
@@ -123,7 +123,7 @@ func (s *ProductService) BatchStatus(ctx context.Context, p dto.BatchStatusReque
 	}
 	err := s.repo.BatchStatus(ctx, p.IDs, *p.Status)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return apperr.New(409, "部分商品已删除，请刷新后重试")
+		return apperr.New(400, "部分商品已删除，请刷新后重试")
 	}
 	return err
 }

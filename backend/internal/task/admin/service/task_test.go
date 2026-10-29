@@ -1,8 +1,12 @@
 package service
 
 import (
+	"errors"
+	"gorm.io/gorm"
+	"lesson06/backend/internal/pkg/apperr"
 	"lesson06/backend/internal/task/admin/dto"
 	"lesson06/backend/internal/task/entity"
+	"lesson06/backend/internal/task/repository"
 	"strings"
 	"testing"
 	"time"
@@ -76,5 +80,15 @@ func TestBoardStatistics(t *testing.T) {
 	done := buildBoard([]entity.Task{{Status: "done"}}, 31, now)
 	if done.Completion != 100 || done.Completed != 1 {
 		t.Fatalf("unexpected completed board: %+v", done)
+	}
+}
+
+func TestTaskBusinessErrorsReturn400(t *testing.T) {
+	for _, source := range []error{repository.ErrConflict, repository.ErrLimit, repository.ErrAnchor, gorm.ErrRecordNotFound} {
+		_, err := result(nil, 0, source)
+		var business *apperr.Error
+		if !errors.As(err, &business) || business.Code != 400 {
+			t.Fatalf("expected business code 400, got %v", err)
+		}
 	}
 }
