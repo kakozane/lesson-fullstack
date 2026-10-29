@@ -1,0 +1,10 @@
+{
+  "version": "0.2.0",
+  "configurations": [{
+    "name": "Lesson 06 admin",
+    "request": "launch",
+    "type": "chrome",
+    "url": "http://localhost:5666",
+    "webRoot": "${workspaceFolder}/apps/admin"
+  }]
+}

@@ -1,0 +1,12 @@
+.DS_Store
+backend/.env
+backend/backend
+backend/coverage.out
+frontend/node_modules/
+frontend/**/dist/
+work/
+deploy/.env
+**/*.pem
+**/*.key
+**/*.log
+**/.DS_Store

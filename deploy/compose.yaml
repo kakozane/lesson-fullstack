@@ -1,0 +1,39 @@
+# 复用服务器已有 MySQL 实例，课程使用独立数据库与账号。
+name: lesson-fullstack
+services:
+  api:
+    image: ${ACR_IMAGE:?}:api-${IMAGE_TAG:?}
+    restart: unless-stopped
+    environment:
+      HTTP_ADDR: 0.0.0.0:8080
+      DB_ADDR: ${DB_ADDR:?}
+      DB_USER: ${DB_USER:?}
+      DB_PASSWORD: ${DB_PASSWORD:?}
+      DB_NAME: ${DB_NAME:?}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?}
+    networks: [default, database]
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, 'http://127.0.0.1:8080/api/health']
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 15s
+    logging:
+      options: {max-size: 10m, max-file: '3'}
+  web:
+    image: ${ACR_IMAGE:?}:web-${IMAGE_TAG:?}
+    restart: unless-stopped
+    ports: ['127.0.0.1:6330:80']
+    depends_on:
+      api: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, 'http://127.0.0.1/api/health']
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    logging:
+      options: {max-size: 10m, max-file: '3'}
+networks:
+  database:
+    external: true
+    name: blog-backend

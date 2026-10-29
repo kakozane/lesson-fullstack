@@ -1,0 +1,13 @@
+.git
+**/node_modules
+**/dist
+**/.turbo
+**/.cache
+**/.DS_Store
+backend/.env
+backend/backend
+backend/coverage.out
+deploy/.env
+**/*.pem
+**/*.key
+work

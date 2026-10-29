@@ -1,0 +1,4 @@
+# mise.toml
+[tools]
+go = "1.26.2"
+node = "24.21.0"
