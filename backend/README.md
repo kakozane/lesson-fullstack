@@ -1,6 +1,6 @@
 # Lesson 06 Go API
 
-Gin 1.12 + GORM 1.31 + MySQL，参考 aiagent_course 的模块分层和手工依赖装配。启动、数据库与接口说明见项目根 README.md 和 [商品接口文档](../docs/05-商品管理接口与TypeScript类型.md)。
+Gin 1.12 + GORM 1.31 + MySQL，参考 aiagent_course 的模块分层和手工依赖装配。启动、数据库与接口说明见项目根 README.md 和 [商品接口文档](../docs/04-商品管理接口与TypeScript类型.md)。
 
 ```sh
 # 首次在新机器使用时
@@ -34,7 +34,7 @@ Go 会自动读取当前工作目录的 `.env`，请在 `backend` 目录执行 `
 
 ## 任务看板
 
-任务模块位于 internal/task，沿用相同分层。bootstrap/task_migration.go 在商品迁移之后初始化任务表与看板版本，种子版本为 2。所有任务写入校验 version 并在事务中加锁，单看板最多 200 条。接口说明见 [任务看板接口文档](../docs/03-任务看板接口与TypeScript类型.md)。
+任务模块位于 internal/task，沿用相同分层。bootstrap/task_migration.go 在商品迁移之后初始化任务表与看板版本，种子版本为 2。所有任务写入校验 version 并在事务中加锁，单看板最多 200 条。接口说明见 [任务看板接口文档](../docs/02-任务看板接口与TypeScript类型.md)。
 
 ```sh
 # 项目根目录，确保服务已启动

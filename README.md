@@ -2,26 +2,26 @@
 
 基于 Vben Admin + Element Plus 的商品管理与任务看板课堂项目。后端使用 Gin + GORM，参考 aiagent_course 的业务模块分层。Go API 已提供，实战重点是前端业务实现。
 
-现在有两个菜单：**商品管理** `/products`、**任务看板** `/tasks`。选择 [任务看板实战讲义](docs/02-任务看板实战讲义.md)或 [商品管理实战讲义](docs/04-商品管理实战讲义.md)，从初始版开始，按步骤完成代码、原理学习与结果验证。两条路线相互独立。
+现在有两个菜单：**商品管理** `/products`、**任务看板** `/tasks`。选择 [任务看板实战讲义](docs/01-任务看板实战讲义.md)或 [商品管理实战讲义](docs/03-商品管理实战讲义.md)，从初始版开始，按步骤完成代码、原理学习与结果验证。两条路线相互独立。
 
-补充学习：[mise 全栈开发环境管理](docs/06-mise全栈开发环境管理.md)，介绍多语言版本固定、目录切换、Corepack 配合与项目任务，可独立阅读和练习。
+补充学习：[mise 全栈开发环境管理](docs/05-mise全栈开发环境管理.md)，介绍多语言版本固定、目录切换、Corepack 配合与项目任务，可独立阅读和练习。
 
 ## 学习资料怎么选
 
-先阅读 [初始版使用说明](docs/01-课堂初始版使用说明.md)，启动同一个 starter 后台。选择感兴趣的一条路线，无须先完成另一条。
+按下方启动说明准备环境，再进入 starter 后台。选择感兴趣的一条路线，无须先完成另一条。
 
 | 学习路线 | 按顺序实战 | 随时查阅 |
 |---|---|---|
-| 任务看板 | [任务看板实战讲义](docs/02-任务看板实战讲义.md) | [任务看板接口与 TS 类型](docs/03-任务看板接口与TypeScript类型.md) |
-| 商品管理 | [商品管理实战讲义](docs/04-商品管理实战讲义.md) | [商品管理接口与 TS 类型](docs/05-商品管理接口与TypeScript类型.md) |
+| 任务看板 | [任务看板实战讲义](docs/01-任务看板实战讲义.md) | [任务看板接口与 TS 类型](docs/02-任务看板接口与TypeScript类型.md) |
+| 商品管理 | [商品管理实战讲义](docs/03-商品管理实战讲义.md) | [商品管理接口与 TS 类型](docs/04-商品管理接口与TypeScript类型.md) |
 
-06～08 是补充资料：mise 环境管理、线上部署、HTTPS 自动续期，可按需阅读。
+05～07 是补充资料：mise 环境管理、线上部署、HTTPS 自动续期，可按需阅读。
 
 ## 初始版与完整版
 
 前端提供独立初始应用 `frontend/apps/starter`，保留登录、布局和两个菜单，业务页只有标题；`frontend/apps/admin` 保留完整参考实现。
 
-在 frontend 目录执行 `corepack pnpm dev:starter`，访问 http://localhost:5667；完整版仍用 `corepack pnpm dev:admin`，地址 http://localhost:5666。两者可同时运行，共用 Go 与数据库。具体操作见 `docs/01-课堂初始版使用说明.md`。
+在 frontend 目录执行 `corepack pnpm dev:starter`，访问 http://localhost:5667；完整版仍用 `corepack pnpm dev:admin`，地址 http://localhost:5666。两者可同时运行，共用 Go 与数据库。具体实现步骤见对应的实战讲义。
 
 ## 启动
 
@@ -155,8 +155,8 @@ teacher、web、playground 和 backend-mock 已移除。保留 monorepo 是因�
 
 完成版演示：[test.retniw.cc](https://test.retniw.cc)，账号 `admin` / `123456`。访问者共用演示数据，初始版仅供本地课堂实战。
 
-发布流程：推送 GitHub `main` → Actions 检查并构建 → 推送阿里云 ACR → 服务器 Docker Compose 更新。配置与运维命令见 [线上部署与自动发布](docs/07-线上部署与自动发布.md)。
+发布流程：推送 GitHub `main` → Actions 检查并构建 → 推送阿里云 ACR → 服务器 Docker Compose 更新。配置与运维命令见 [线上部署与自动发布](docs/06-线上部署与自动发布.md)。
 
-HTTPS 原理、首次配置和续期检查见 [HTTPS 证书申请与自动续期](docs/08-HTTPS证书申请与自动续期.md)。
+HTTPS 原理、首次配置和续期检查见 [HTTPS 证书申请与自动续期](docs/07-HTTPS证书申请与自动续期.md)。
 
-模块接口详解：[商品管理与 TypeScript 类型](docs/05-商品管理接口与TypeScript类型.md)、[任务看板与 TypeScript 类型](docs/03-任务看板接口与TypeScript类型.md)。
+模块接口详解：[商品管理与 TypeScript 类型](docs/04-商品管理接口与TypeScript类型.md)、[任务看板与 TypeScript 类型](docs/02-任务看板接口与TypeScript类型.md)。

@@ -380,4 +380,4 @@ export const batchStatus = (
 | `frontend/apps/admin/src/api/products.ts` | 页面使用的类型与请求函数 |
 | `frontend/apps/admin/src/api/request.ts` | API 前缀、鉴权头、响应解包与错误提示 |
 
-任务模块的版本与拖拽协议见 [任务看板接口与 TypeScript 类型](03-任务看板接口与TypeScript类型.md)。
+任务模块的版本与拖拽协议见 [任务看板接口与 TypeScript 类型](02-任务看板接口与TypeScript类型.md)。
