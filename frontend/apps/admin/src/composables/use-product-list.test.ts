@@ -103,7 +103,7 @@ describe('商品列表状态', () => {
     await state.load();
     expect(state.failed.value).toBe(false);
   });
-  it('每页数量变更重置页码，卸载后忽略响应', async () => {
+  it('每页数量变更重置页码并更新结果', async () => {
     vi.mocked(getProducts).mockResolvedValue({ ...emptyPage, pageSize: 20 });
     const state = setup();
     state.query.page = 3;
@@ -111,17 +111,8 @@ describe('商品列表状态', () => {
     expect(getProducts).toHaveBeenLastCalledWith(
       expect.objectContaining({ page: 1, pageSize: 20 }),
     );
-    let finish!: (value: typeof emptyPage) => void;
-    vi.mocked(getProducts).mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          finish = resolve;
-        }),
-    );
-    const pending = state.load();
-    scopes.at(-1)!.stop();
-    finish({ ...emptyPage, total: 100 });
-    await pending;
-    expect(state.total.value).toBe(0);
+    expect(state.query.page).toBe(1);
+    expect(state.query.pageSize).toBe(20);
+    expect(state.loading.value).toBe(false);
   });
 });

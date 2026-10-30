@@ -29,9 +29,9 @@ func Register(g *gin.RouterGroup, app *bootstrap.App) {
 
 	// 商品管理：列表采用服务端筛选分页，商品金额统一使用整数分。
 	products := protected.Group("/products")
-	products.GET("", app.Product.List)                 // 按关键词、分类和上下架状态分页查询。
-	products.POST("", app.Product.Create)              // 新增商品，商品编码必须唯一。
-	products.PUT("/:id", app.Product.Update)           // 编辑商品，保留库存 0、下架 0 和空描述等合法值。
-	products.DELETE("/:id", app.Product.Delete)        // 删除指定商品。
-	products.PATCH("/status", app.Product.BatchStatus) // 根据 ids 批量上下架，单条操作也复用此接口。
+	products.GET("", app.Product.List)                      // 按关键词、分类和上下架状态分页查询。
+	products.POST("", app.Product.Create)                   // 新增商品，商品编码必须唯一。
+	products.PUT("/:id", app.Product.Update)                // 编辑商品，保留库存 0、下架 0 和空描述等合法值。
+	products.DELETE("/:id", app.Product.Delete)             // 删除指定商品。
+	products.PATCH("/:id/status", app.Product.UpdateStatus) // 更新单个商品的上下架状态。
 }

@@ -164,6 +164,20 @@ func TestRunMySQL(t *testing.T) {
 	if item.CategoryID != 2 || item.CategoryName != "办公文具" {
 		t.Fatalf("category fields: %+v", item)
 	}
+	// 单个商品上下架支持写入零值，并保留其他商品字段。
+	for _, nextStatus := range []int{1, 0} {
+		if err := service.UpdateStatus(ctx, item.ID, productdto.StatusRequest{Status: &nextStatus}); err != nil {
+			t.Fatal(err)
+		}
+		updated, err := service.List(ctx, productdto.ListQuery{Keyword: input.SKU, Page: 1, PageSize: 10})
+		if err != nil || len(updated.Items) != 1 {
+			t.Fatalf("status list: %v %v", updated, err)
+		}
+		actual := updated.Items[0]
+		if actual.Status != nextStatus || actual.Name != input.Name || actual.CategoryID != input.CategoryID || actual.Stock != input.Stock {
+			t.Fatalf("status update: %+v", actual)
+		}
+	}
 	input.CategoryID = 3
 	if err := service.Update(ctx, item.ID, input); err != nil {
 		t.Fatal(err)

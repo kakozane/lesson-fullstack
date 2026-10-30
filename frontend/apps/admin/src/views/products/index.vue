@@ -19,7 +19,7 @@ import {
   ElTableColumn,
   ElTag,
 } from 'element-plus';
-import { batchStatus, deleteProduct, getCategories } from '#/api/products';
+import { updateProductStatus, deleteProduct, getCategories } from '#/api/products';
 import { useProductList } from '#/composables/use-product-list';
 import ProductForm from './product-form.vue';
 
@@ -38,7 +38,6 @@ const {
 } = useProductList();
 const categories = ref<Category[]>([]);
 const categoriesFailed = ref(false);
-const selected = ref<Product[]>([]);
 const dialogVisible = ref(false);
 const editing = ref<Product>();
 const operating = ref(false);
@@ -59,21 +58,18 @@ function openForm(product?: Product) {
   dialogVisible.value = true;
 }
 async function saved() {
-  selected.value = [];
   await load();
 }
-async function changeStatus(status: 0 | 1, row?: Product) {
+async function changeStatus(status: 0 | 1, row: Product) {
   if (operating.value || loading.value) return;
-  const ids = row ? [row.id] : selected.value.map((item) => item.id);
-  if (ids.length === 0) return;
   operating.value = true;
   try {
     await ElMessageBox.confirm(
-      `确定${status ? '上架' : '下架'}选中的 ${ids.length} 件商品吗？`,
+      `确定${status ? '上架' : '下架'}商品「${row.name}」吗？`,
       '确认修改状态',
       { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' },
     );
-    await batchStatus(ids, status);
+    await updateProductStatus(row.id, status);
     ElMessage.success('商品状态已更新');
     await saved();
   } catch {
@@ -191,31 +187,6 @@ onBeforeRouteLeave(() => {
           >
         </div>
       </div>
-      <div
-        class="bg-accent mb-4 flex flex-wrap items-center gap-3 rounded-md px-4 py-3"
-      >
-        <span class="text-muted-foreground text-sm"
-          >已选 {{ selected.length }} 件（仅当前页）</span
-        >
-        <ElButton
-          size="small"
-          :disabled="!selected.length || operating || loading"
-          @click="changeStatus(1)"
-          >批量上架</ElButton
-        >
-        <ElButton
-          size="small"
-          :disabled="!selected.length || operating || loading"
-          @click="changeStatus(0)"
-          >批量下架</ElButton
-        >
-        <span
-          v-if="operating"
-          role="status"
-          class="text-muted-foreground text-sm"
-          >正在处理，请稍候…</span
-        >
-      </div>
       <ElAlert
         v-if="failed"
         title="商品加载失败，请重试"
@@ -232,13 +203,7 @@ onBeforeRouteLeave(() => {
         :data="items"
         row-key="id"
         stripe
-        @selection-change="(rows: Product[]) => (selected = rows)"
       >
-        <ElTableColumn
-          type="selection"
-          width="48"
-          :selectable="() => !operating"
-        />
         <ElTableColumn label="商品信息" min-width="240"
           ><template #default="{ row }"
             ><div class="py-1">

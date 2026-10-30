@@ -115,22 +115,11 @@ func (s *ProductService) Update(ctx context.Context, id int64, p dto.SaveRequest
 func (s *ProductService) Delete(ctx context.Context, id int64) error {
 	return storageError(s.repo.Delete(ctx, id))
 }
-func (s *ProductService) BatchStatus(ctx context.Context, p dto.BatchStatusRequest) error {
-	if len(p.IDs) < 1 || len(p.IDs) > 100 || p.Status == nil || (*p.Status != 0 && *p.Status != 1) {
-		return apperr.New(400, "请选择 1～100 个商品及有效状态")
+func (s *ProductService) UpdateStatus(ctx context.Context, id int64, p dto.StatusRequest) error {
+	if id < 1 || p.Status == nil || (*p.Status != 0 && *p.Status != 1) {
+		return apperr.New(400, "商品 ID 或状态不合法")
 	}
-	seen := map[int64]bool{}
-	for _, id := range p.IDs {
-		if id < 1 || seen[id] {
-			return apperr.New(400, "商品 ID 不合法或重复")
-		}
-		seen[id] = true
-	}
-	err := s.repo.BatchStatus(ctx, p.IDs, *p.Status)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return apperr.New(400, "部分商品已删除，请刷新后重试")
-	}
-	return err
+	return storageError(s.repo.UpdateStatus(ctx, id, *p.Status))
 }
 
 func (s *ProductService) validateCategory(ctx context.Context, id int64) error {

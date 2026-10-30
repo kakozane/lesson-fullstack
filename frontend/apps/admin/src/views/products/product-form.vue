@@ -78,28 +78,13 @@ watch(
   async (open) => {
     if (!open) return;
     const p = props.product;
-    Object.assign(
-      form,
-      p
-        ? {
-            name: p.name,
-            sku: p.sku,
-            categoryId: p.categoryId,
-            price: p.priceCents / 100,
-            stock: p.stock,
-            status: p.status,
-            description: p.description,
-          }
-        : {
-            name: '',
-            sku: '',
-            categoryId: undefined,
-            price: 0.01,
-            stock: 0,
-            status: 0,
-            description: '',
-          },
-    );
+    form.name = p?.name ?? '';
+    form.sku = p?.sku ?? '';
+    form.categoryId = p?.categoryId;
+    form.price = p ? p.priceCents / 100 : 0.01;
+    form.stock = p?.stock ?? 0;
+    form.status = p?.status ?? 0;
+    form.description = p?.description ?? '';
     await nextTick();
     formRef.value?.clearValidate();
   },

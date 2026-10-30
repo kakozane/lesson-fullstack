@@ -49,13 +49,17 @@ func TestInvalidQueries(t *testing.T) {
 		}
 	}
 }
-func TestInvalidBatch(t *testing.T) {
-	zero := 0
+func TestInvalidStatus(t *testing.T) {
 	s := NewProductService(nil)
-	for _, req := range []dto.BatchStatusRequest{{IDs: []int64{1, 1}, Status: &zero}, {IDs: []int64{}, Status: &zero}, {IDs: []int64{1}}, {IDs: []int64{-1}, Status: &zero}} {
-		if err := s.BatchStatus(context.Background(), req); err == nil {
-			t.Fatalf("accepted batch: %+v", req)
+	invalid := 2
+	for _, req := range []dto.StatusRequest{{}, {Status: &invalid}} {
+		if err := s.UpdateStatus(context.Background(), 1, req); err == nil {
+			t.Fatal("accepted invalid status")
 		}
+	}
+	zero := 0
+	if err := s.UpdateStatus(context.Background(), 0, dto.StatusRequest{Status: &zero}); err == nil {
+		t.Fatal("accepted invalid ID")
 	}
 }
 

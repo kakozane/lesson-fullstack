@@ -70,14 +70,18 @@ func (h *Handler) Delete(c *gin.Context) {
 	}
 	response.Success(c, nil, "删除成功")
 }
-func (h *Handler) BatchStatus(c *gin.Context) {
-	var req dto.BatchStatusRequest
+func (h *Handler) UpdateStatus(c *gin.Context) {
+	id, ok := httpx.ID(c)
+	if !ok {
+		return
+	}
+	var req dto.StatusRequest
 	if !httpx.DecodeJSON(c, &req) {
 		return
 	}
-	if err := h.products.BatchStatus(c.Request.Context(), req); err != nil {
+	if err := h.products.UpdateStatus(c.Request.Context(), id, req); err != nil {
 		response.Fail(c, err)
 		return
 	}
-	response.Success(c, nil, "批量更新成功")
+	response.Success(c, nil, "状态更新成功")
 }

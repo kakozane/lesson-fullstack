@@ -1,19 +1,31 @@
 <script setup lang="ts">
+import type { Category, Product } from '#/api/products';
+import { onMounted, ref } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router';
 import { PageHeader } from '@vben/common';
 import {
+  ElAlert,
   ElButton,
   ElCard,
   ElForm,
   ElFormItem,
   ElInput,
+  ElMessage,
+  ElMessageBox,
+  ElOption,
   ElPagination,
   ElSelect,
   ElTable,
   ElTableColumn,
   ElTag,
 } from 'element-plus';
-
+// import { updateProductStatus, deleteProduct, getCategories } from '#/api/products';
+// import { useProductList } from '#/composables/use-product-list';
 import ProductForm from './product-form.vue';
+
+
+
+
 </script>
 
 <template>
@@ -53,16 +65,8 @@ import ProductForm from './product-form.vue';
           <ElButton type="primary">新增商品</ElButton>
         </div>
       </div>
-      <div
-        class="bg-accent mb-4 flex flex-wrap items-center gap-3 rounded-md px-4 py-3"
-      >
-        <span class="text-muted-foreground text-sm">已选 — 件（仅当前页）</span>
-        <ElButton size="small" disabled>批量上架</ElButton>
-        <ElButton size="small" disabled>批量下架</ElButton>
-      </div>
       <!-- 实战接入：列表数据、加载状态、行字段和操作事件。 -->
       <ElTable row-key="id" stripe>
-        <ElTableColumn type="selection" width="48" />
         <ElTableColumn label="商品信息" min-width="240">
           <template #default>
             <div class="py-1">

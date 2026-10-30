@@ -45,7 +45,7 @@ func TestHTTPContract(t *testing.T) {
 		{"invalid page", "GET", "/api/products?page=0", "", "Bearer " + result.AccessToken, 400},
 		{"malformed page", "GET", "/api/products?page=abc", "", "Bearer " + result.AccessToken, 400},
 		{"invalid id", "PUT", "/api/products/no", "{}", "Bearer " + result.AccessToken, 400},
-		{"invalid batch", "PATCH", "/api/products/status", `{"ids":[1,1],"status":0}`, "Bearer " + result.AccessToken, 400},
+		{"invalid status", "PATCH", "/api/products/1/status", `{"status":2}`, "Bearer " + result.AccessToken, 400},
 		{"info", "GET", "/api/user/info", "", "Bearer " + result.AccessToken, 200},
 		{"not found", "GET", "/api/unknown", "", "Bearer " + result.AccessToken, 404},
 		{"wrong method", "POST", "/api/categories", "", "Bearer " + result.AccessToken, 405},

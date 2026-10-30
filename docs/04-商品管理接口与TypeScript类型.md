@@ -1,6 +1,6 @@
 # 商品管理接口与 TypeScript 类型
 
-商品管理包含分类查询、列表筛选分页、新增、编辑、删除和批量上下架。本文以当前 Gin 路由、DTO、业务校验及 Vben 请求封装为准，说明请求参数、完整响应和前端类型写法。
+商品管理包含分类查询、列表筛选分页、新增、编辑、删除和单条上下架。本文以当前 Gin 路由、DTO、业务校验及 Vben 请求封装为准，说明请求参数、完整响应和前端类型写法。
 
 示例中的 ID、时间和商品内容用于解释结构，不代表线上当前数据。在线演示站使用共享数据，新增和删除练习优先在本地进行。
 
@@ -25,9 +25,9 @@
 | 新增商品 | POST | `/api/products` | `createProduct(data)` | `null` |
 | 编辑商品 | PUT | `/api/products/:id` | `updateProduct(id, data)` | `null` |
 | 删除商品 | DELETE | `/api/products/:id` | `deleteProduct(id)` | `null` |
-| 批量上下架 | PATCH | `/api/products/status` | `batchStatus(ids, status)` | `null` |
+| 单条上下架 | PATCH | `/api/products/:id/status` | `updateProductStatus(id, status)` | `null` |
 
-`:id` 表示 URL 中的商品 ID，例如 `/api/products/42`。当前没有单独的商品详情接口，编辑表单直接使用列表行中的完整商品数据；单条上下架复用批量接口。
+`:id` 表示 URL 中的商品 ID，例如 `/api/products/42`。当前没有单独的商品详情接口，编辑表单直接使用列表行中的完整商品数据；单条上下架使用独立状态接口。
 
 ### HTTP 状态码与 JSON code 的区别
 
@@ -53,7 +53,7 @@ export interface ApiResponse<T> {
 }
 ```
 
-项目的 `requestClient` 已配置 JSON 成功码为 `200`，成功时解包 `data`，失败时抛出异常。因此 `await getProducts(params)` 得到的是 `ProductPage`，直接访问 `result.items`，不能再写 `result.data.items`。新增、编辑、删除、批量上下架成功得到 `null`，不是商品对象，也不是 HTTP 204。
+项目的 `requestClient` 已配置 JSON 成功码为 `200`，成功时解包 `data`，失败时抛出异常。因此 `await getProducts(params)` 得到的是 `ProductPage`，直接访问 `result.items`，不能再写 `result.data.items`。新增、编辑、删除、单条上下架成功得到 `null`，不是商品对象，也不是 HTTP 204。
 
 JSON 写入接口只接受一个 JSON 值，并拒绝未知字段；请求体上限为 64 KiB。不要把包含 `id`、`updatedAt` 的整个列表行直接作为新增或编辑请求体，应只提取 `ProductInput` 字段。JSON 数值字段使用数值，不传数字字符串或小数形式的整数参数。
 
@@ -248,39 +248,27 @@ Authorization: Bearer <accessToken>
 
 删除是永久删除。商品不存在或重复删除返回 HTTP `400`，消息为 `商品不存在或已删除`。前端通常先二次确认，成功后重查列表，采用服务端返回的实际页码。
 
-## 8. 单条与批量上下架
+## 8. 单个商品上下架
 
-**接口名称：批量更新商品上下架状态**  
-**方法与路径：`PATCH /api/products/status`**  
-**参数位置：JSON 请求体。**
+**方法与路径：`PATCH /api/products/:id/status`**
 
-| 参数 | 类型 | 是否必填 | 约束 |
-|---|---|---|---|
-| `ids` | `number[]` | 是 | 1～100 个不重复的正整数 |
-| `status` | `0 \| 1` | 是 | 0 下架，1 上架；不能省略或传 null |
+Path 参数 id 为商品正整数 ID；JSON 请求体只包含 status（数字 0 下架、1 上架，不能省略或传 null）。
 
 ```json
-{
-  "ids": [35, 36],
-  "status": 0
-}
+{"status": 0}
 ```
 
-单条上下架同样调用此接口，例如 `{"ids":[42],"status":1}`。成功响应：
+成功响应：
 
 ```json
-{
-  "code": 200,
-  "data": null,
-  "message": "批量更新成功"
-}
+{"code": 200, "data": null, "message": "状态更新成功"}
 ```
 
-服务端在事务内检查并锁定全部目标商品后再更新。任意 ID 已不存在时返回 `400`，整批失败，不会部分更新。重复提交相同状态仍然成功。空数组、重复 ID、超出 100 个 ID 或非法状态返回 `400`。
+非法 ID、非法状态或商品不存在返回 HTTP 400、JSON code 400。重复提交相同状态仍然成功。此接口只修改目标商品的状态和更新时间，不覆盖商品名称、分类或库存。
 
 ## 9. 完整 TypeScript 类型与请求封装
 
-对应文件：`frontend/apps/admin/src/api/products.ts`。下面保持现有函数名和调用方式，并补全写入接口的 `<null>` 返回类型以及批量请求类型。当前源码的部分写入函数没有显式泛型；补上泛型只改善类型约束，不改变后端响应。
+对应文件：`frontend/apps/admin/src/api/products.ts`。下面保持现有函数名和调用方式，并补全写入接口的 `<null>` 返回类型以及状态请求类型。当前源码的部分写入函数没有显式泛型；补上泛型只改善类型约束，不改变后端响应。
 
 `ProductQuery.categoryId` 为可选属性：默认和清空分类时不传，选择分类后传数字 ID。其他属性表示完整的筛选与分页状态，这不代表 HTTP 接口要求每个 Query 参数都必须提交。
 
@@ -327,8 +315,7 @@ export interface ProductPage {
   pageSize: number;
 }
 
-export interface BatchStatusInput {
-  ids: number[];
+export interface ProductStatusInput {
   status: ProductStatus;
 }
 
@@ -349,12 +336,12 @@ export const updateProduct = (
 export const deleteProduct = (id: number): Promise<null> =>
   requestClient.delete<null>(`/products/${id}`);
 
-export const batchStatus = (
-  ids: number[],
+export const updateProductStatus = (
+  id: number,
   status: ProductStatus,
 ): Promise<null> => {
-  const data: BatchStatusInput = { ids, status };
-  return requestClient.request<null>('/products/status', {
+  const data: ProductStatusInput = { status };
+  return requestClient.request<null>(`/products/${id}/status`, {
     method: 'PATCH',
     data,
   });
@@ -385,7 +372,6 @@ export const batchStatus = (
 | 401 | 401 | 未登录、令牌失效或后端重启 | `登录已过期，请重新登录` |
 | 400 | 400 | 编辑或删除的商品不存在 | `商品不存在或已删除` |
 | 400 | 400 | SKU 重复 | `商品编码已存在` |
-| 400 | 400 | 批量操作中存在已删除商品 | `部分商品已删除，请刷新后重试` |
 | 404 | 400 | API 接口路径不存在 | `接口不存在` |
 | 500 | 400 | 数据库或服务异常 | `服务暂时不可用，请稍后重试` |
 
@@ -397,7 +383,7 @@ export const batchStatus = (
 | `backend/internal/product/admin/dto/product.go` | 请求和响应字段 |
 | `backend/internal/product/admin/handler/product.go` | Query/JSON 绑定与成功响应 |
 | `backend/internal/product/admin/service/product.go` | 字段范围、分类和错误映射 |
-| `backend/internal/product/repository/product_repository.go` | 筛选分页、零值更新、事务批量状态 |
+| `backend/internal/product/repository/product_repository.go` | 筛选分页、零值更新、单条状态更新 |
 | `frontend/apps/admin/src/api/products.ts` | 页面使用的类型与请求函数 |
 | `frontend/apps/admin/src/api/request.ts` | API 前缀、鉴权头、响应解包与错误提示 |
 

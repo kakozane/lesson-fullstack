@@ -1,8 +1,8 @@
 import { requestClient } from '#/api/request';
 
 export interface Category {
- id: number;
- name: string;
+  id: number;
+  name: string;
 }
 
 export interface ProductInput {
@@ -32,17 +32,20 @@ export interface ProductPage {
   page: number;
   pageSize: number;
 }
+
 export const getProducts = (params: ProductQuery) =>
   requestClient.get<ProductPage>('/products', { params });
+
 export const getCategories = () => requestClient.get<Category[]>('/categories');
-export const createProduct = (data: ProductInput) =>
-  requestClient.post('/products', data);
+
+export const createProduct = (data: ProductInput) => requestClient.post('/products', data);
 export const updateProduct = (id: number, data: ProductInput) =>
   requestClient.put(`/products/${id}`, data);
-export const deleteProduct = (id: number) =>
-  requestClient.delete(`/products/${id}`);
-export const batchStatus = (ids: number[], status: 0 | 1) =>
-  requestClient.request('/products/status', {
+
+export const deleteProduct = (id: number) => requestClient.delete(`/products/${id}`);
+
+export const updateProductStatus = (id: number, status: 0 | 1) =>
+  requestClient.request(`/products/${id}/status`, {
     method: 'PATCH',
-    data: { ids, status },
+    data: { status },
   });

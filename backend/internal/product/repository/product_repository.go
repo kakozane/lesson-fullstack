@@ -7,7 +7,6 @@ import (
 	"lesson06/backend/internal/product/entity"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type ProductRepository struct{ db *gorm.DB }
@@ -61,17 +60,15 @@ func (r *ProductRepository) Delete(ctx context.Context, id int64) error {
 	}
 	return nil
 }
-func (r *ProductRepository) BatchStatus(ctx context.Context, ids []int64, status int) error {
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		var found []int64
-		if err := tx.Model(&entity.Product{}).Clauses(clause.Locking{Strength: "UPDATE"}).Where("id IN ?", ids).Pluck("id", &found).Error; err != nil {
-			return err
-		}
-		if len(found) != len(ids) {
-			return gorm.ErrRecordNotFound
-		}
-		return tx.Model(&entity.Product{}).Where("id IN ?", ids).Updates(map[string]any{"status": status, "updated_at": gorm.Expr("CURRENT_TIMESTAMP")}).Error
-	})
+func (r *ProductRepository) UpdateStatus(ctx context.Context, id int64, status int) error {
+	result := r.db.WithContext(ctx).Model(&entity.Product{}).Where("id = ?", id).Updates(map[string]any{"status": status, "updated_at": gorm.Expr("CURRENT_TIMESTAMP")})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
 
 func (r *ProductRepository) Categories(ctx context.Context) ([]entity.Category, error) {

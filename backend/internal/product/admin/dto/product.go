@@ -17,9 +17,8 @@ type ListQuery struct {
 	Page       int    `form:"page,default=1"`
 	PageSize   int    `form:"pageSize,default=10"`
 }
-type BatchStatusRequest struct {
-	IDs    []int64 `json:"ids"`
-	Status *int    `json:"status"`
+type StatusRequest struct {
+	Status *int `json:"status"`
 }
 type Product struct {
 	CategoryName string `json:"categoryName"`

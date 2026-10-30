@@ -1,6 +1,6 @@
 import type { Product, ProductQuery } from '../api/products';
 
-import { onScopeDispose, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
 
 import { getProducts } from '../api/products';
 
@@ -44,11 +44,16 @@ export function useProductList() {
     }
   }
   function search() {
-    Object.assign(query, filters, { keyword: filters.keyword.trim(), page: 1 });
+    query.keyword = filters.keyword.trim();
+    query.categoryId = filters.categoryId;
+    query.status = filters.status;
+    query.page = 1;
     return load();
   }
   function reset() {
-    Object.assign(filters, { keyword: '', categoryId: undefined, status: '' });
+    filters.keyword = '';
+    filters.categoryId = undefined;
+    filters.status = '';
     return search();
   }
   function changePage(page: number) {
@@ -56,12 +61,10 @@ export function useProductList() {
     return load();
   }
   function changeSize(pageSize: number) {
-    Object.assign(query, { pageSize, page: 1 });
+    query.pageSize = pageSize;
+    query.page = 1;
     return load();
   }
-  onScopeDispose(() => {
-    requestId++;
-  });
   return {
     filters,
     query,
