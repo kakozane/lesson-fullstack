@@ -33,7 +33,7 @@ const rules: FormRules = {
   ],
   categoryId: [
     {
-      type: 'number',
+      type: 'integer',
       min: 1,
       required: true,
       message: '请选择分类',

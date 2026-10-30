@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Category, Product } from '#/api/products';
 import { onMounted, ref } from 'vue';
-import { onBeforeRouteLeave } from 'vue-router';
 import { PageHeader } from '@vben/common';
 import {
   ElAlert,
@@ -96,13 +95,7 @@ async function remove(row: Product) {
     operating.value = false;
   }
 }
-onBeforeRouteLeave(() => {
-  if (operating.value) {
-    ElMessage.warning('操作处理中，请稍候');
-    return false;
-  }
-  return true;
-});
+
 </script>
 
 <template>
@@ -227,7 +220,8 @@ onBeforeRouteLeave(() => {
             ><span :class="row.stock < 20 ? 'text-orange-500' : ''">{{
               row.stock
             }}</span></template
-          ></ElTableColumn
+          >
+          </ElTableColumn
         >
         <ElTableColumn label="状态" width="110" align="center"
           ><template #default="{ row }"

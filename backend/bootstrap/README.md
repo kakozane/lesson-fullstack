@@ -11,9 +11,10 @@
 | 文件 | 职责 |
 |---|---|
 | `bootstrap/database.go` | 连接 MySQL，创建配置指定的数据库，初始化连接池与 GORM |
-| `bootstrap/app.go` | 按商品、任务的顺序初始化数据库，再装配业务依赖 |
+| `bootstrap/app.go` | 按商品、任务、分类迁移的顺序初始化数据库，再装配业务依赖 |
 | `bootstrap/migrations.go` | 创建商品表与迁移记录表，版本 1 首次插入 36 条演示商品 |
 | `bootstrap/task_migration.go` | 创建任务表与看板版本表，版本 2 首次插入 9 条演示任务 |
+| `bootstrap/category_migration.go` | 版本 3 创建分类表，将旧商品中文分类转换为分类 ID |
 | `migration/001_products_seed.sql` | 商品假数据，价格单位为分 |
 | `migration/002_tasks_seed.sql` | 任务假数据，截止日期以执行当天为基准 |
 | `bootstrap/migrations_test.go` | 独立临时 MySQL 库验证首次初始化及重复启动 |
@@ -27,6 +28,7 @@ main → config.Load → bootstrap.InitializeApp（传入两份 SQL 内容）
                        ├─ LaunchDatabase：连接与建库
                        ├─ initialize：商品表、版本 1 种子
                        ├─ initializeTasks：任务表、版本 2 种子
+                       ├─ initializeCategories：分类表、版本 3 分类迁移
                        └─ 创建 repository / service / handler
 ```
 
@@ -48,13 +50,14 @@ Go 会自动读取当前工作目录的 `.env`，请在 `backend` 目录执行 `
 | 表 | 内容 |
 |---|---|
 | `products` | 商品名称、编码、分类、整数分价格、库存与上下架状态 |
+| `categories` | 商品分类字典，商品通过 category_id 关联 |
 | `tasks` | 任务内容、状态、优先级、负责人、截止日期与列内位置 |
 | `task_board_meta` | 当前看板版本，任务写入用它检查并发冲突 |
-| `lesson_migrations` | 已完成的种子迁移版本，当前为 1、2 |
+| `lesson_migrations` | 已完成的迁移版本，当前为 1、2、3 |
 
 已有 MySQL 服务可以直接使用，不必为分享项目导出本机业务数据。首次创建的示例内容由迁移文件提供。
 
-这不是 Go 语言自带的行为，而是本项目 `LaunchDatabase`、`initialize` 和 `initializeTasks` 主动执行建库、建表与种子 SQL 的结果。程序不会安装或启动 MySQL；MySQL 未启动、地址或凭据错误、账号权限不足时，初始化会失败并返回错误。
+这不是 Go 语言自带的行为，而是本项目 `LaunchDatabase`、`initialize`、`initializeTasks` 和 `initializeCategories` 主动执行建库、建表与种子 SQL 的结果。程序不会安装或启动 MySQL；MySQL 未启动、地址或凭据错误、账号权限不足时，初始化会失败并返回错误。
 
 ## 如何使用假数据 SQL
 
@@ -104,7 +107,7 @@ set +a
 RUN_MYSQL_MIGRATION_TEST=1 go test -race ./bootstrap -run TestRunMySQL -count=1 -v
 ```
 
-测试只读取连接地址与凭据，忽略 `.env` 中的 `DB_NAME`。它创建 `lesson06_migration_test_*` 临时库，验证 36 条商品、9 条任务和两条版本记录，再修改、删除数据并重复初始化，检查数据和看板版本是否保留。正常结束会清理本次临时库；测试账号需要建库和删库权限。
+测试只读取连接地址与凭据，忽略 `.env` 中的 `DB_NAME`。它创建 `lesson06_migration_test_*` 临时库，验证 36 条商品、9 条任务、3 个分类和三条版本记录，再修改、删除数据并重复初始化，检查数据和看板版本是否保留，并验证旧分类迁移、分类筛选和单个商品上下架。正常结束会清理本次临时库；测试账号需要建库和删库权限。
 
 ## 分享文件
 

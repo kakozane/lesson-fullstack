@@ -1,31 +1,18 @@
 <script setup lang="ts">
-import type { Category, Product } from '#/api/products';
-import { onMounted, ref } from 'vue';
-import { onBeforeRouteLeave } from 'vue-router';
 import { PageHeader } from '@vben/common';
 import {
-  ElAlert,
   ElButton,
   ElCard,
   ElForm,
   ElFormItem,
   ElInput,
-  ElMessage,
-  ElMessageBox,
-  ElOption,
   ElPagination,
   ElSelect,
   ElTable,
   ElTableColumn,
   ElTag,
 } from 'element-plus';
-// import { updateProductStatus, deleteProduct, getCategories } from '#/api/products';
-// import { useProductList } from '#/composables/use-product-list';
 import ProductForm from './product-form.vue';
-
-
-
-
 </script>
 
 <template>
